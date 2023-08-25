@@ -45,15 +45,18 @@ public class BookCategoryPersistenceService {
         return bookCategory;
     }
 
-    public List<BookCategory> getAllOrByName(String name) {
-        log.debug("getAllOrByName: {}", name);
+    public List<BookCategory> getAll() {
+        log.debug("getAll");
 
-        if (name != null) {
-            return repository.list("Select e from BookCategory e where e.name = ?1", name);
-        }
         return repository.listAll();
     }
 
+    public List<BookCategory> getAllByName(String name){
+        log.debug("getAllByName: {}", name);
+        name = "%" + name.toLowerCase() + "%";
+
+        return repository.list("Select e from BookCategory e where lower(e.name) like ?1", name);
+    }
     public BookCategory getBookCategory(Integer id) throws BookCategoryNotFoundException {
         log.debug("getBookCategory: {}", id);
 

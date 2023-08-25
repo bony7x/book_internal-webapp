@@ -33,7 +33,7 @@ public class BookPersistenceService {
         return book;
     }
 
-    public List<Book> getAllBooks(){
+    public List<Book> getAllBooks() {
         log.debug("getAllBooks");
 
         return repository.listAll();
@@ -48,8 +48,10 @@ public class BookPersistenceService {
 
     public List<Book> getAllByName(String name) {
         log.debug("getAllByName: {}", name);
+        name = "%" + name +"%";
+        name = name.toLowerCase();
 
-        return repository.list("Select e from Book e where e.name = ?1", name);
+        return repository.list("select e from Book e where lower(e.name) like ?1", name);
     }
 
     public List<Book> getAllByCategoryId(Integer categoryId) {
@@ -88,7 +90,7 @@ public class BookPersistenceService {
         log.debug("deleteBook: {}", id);
 
         Book book = getById(id);
-        if(!book.getBorrowings().isEmpty()){
+        if (!book.getBorrowings().isEmpty()) {
             throw new BorrowingConflictException("Vypozicana kniha nemoze byt odstranena!");
         }
         repository.delete(book);

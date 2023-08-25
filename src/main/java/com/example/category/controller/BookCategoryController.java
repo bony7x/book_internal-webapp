@@ -54,7 +54,12 @@ public class BookCategoryController {
     public Response getBookCategories(@QueryParam("name") String name) {
         log.debug("getBookCategories: {}", name);
 
-        List<BookCategory> books = persistenceService.getAllOrByName(name);
+        if(name!= null){
+            List<BookCategory> books = persistenceService.getAllByName(name);
+            List<BookCategoryDto> dtos = mapper.map(books);
+            return Response.status(200).entity(dtos).build();
+        }
+        List<BookCategory> books = persistenceService.getAll();
         List<BookCategoryDto> dtos = mapper.map(books);
         return Response.status(200).entity(dtos).build();
     }

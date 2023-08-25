@@ -3,7 +3,6 @@ package com.example.customer.controller;
 import com.example.borrow.exception.BorrowingConflictException;
 import com.example.customer.controller.dto.CreateCustomerDto;
 import com.example.customer.controller.dto.CustomerDto;
-import com.example.customer.controller.dto.CustomersDto;
 import com.example.customer.controller.mapper.CustomerMapper;
 import com.example.customer.domain.entity.Customer;
 import com.example.customer.domain.service.CustomerPersistenceService;
@@ -14,7 +13,6 @@ import jakarta.validation.Valid;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
-import jakarta.ws.rs.PATCH;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
@@ -24,6 +22,7 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import java.util.List;
+import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 
 @ApplicationScoped
@@ -55,17 +54,17 @@ public class CustomerController {
     public Response getCustomers(@QueryParam("firstName") String firstName, @QueryParam("lastName") String lastName) {
         log.debug("getCustomers: {} {}", firstName, lastName);
 
-        if (firstName != null && lastName != null) {
+        if (firstName != null && lastName != null &&!firstName.isEmpty()&& !lastName.isEmpty())  {
             List<Customer> customers = persistenceService.getAllByFirstNameAndLastName(firstName, lastName);
             List<CustomerDto> dto = mapper.map(customers);
             return Response.status(200).entity(dto).build();
         }
-        if (firstName != null) {
+        if (firstName != null && !firstName.isEmpty()) {
             List<Customer> customers = persistenceService.getAllByFirstName(firstName);
             List<CustomerDto> dto = mapper.map(customers);
             return Response.status(200).entity(dto).build();
         }
-        if (lastName != null) {
+        if (lastName != null && !lastName.isEmpty()) {
             List<Customer> customers = persistenceService.getAllByLastName(lastName);
             List<CustomerDto> dto = mapper.map(customers);
             return Response.status(200).entity(dto).build();

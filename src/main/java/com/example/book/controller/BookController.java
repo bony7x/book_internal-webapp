@@ -61,12 +61,12 @@ public class BookController {
     public Response getBooks(@QueryParam("name") String name, @QueryParam("categoryId") Integer categoryId) {
         log.debug("getBooks: {} {}", name, categoryId);
 
-        if (name != null && categoryId != null) {
+        if (name != null && categoryId != null && !name.isEmpty()) {
             List<Book> books = persistenceService.getAllByNameAndCategoryId(name, categoryId);
             List<BookDto> dtos = mapper.map(books);
             return Response.status(200).entity(dtos).build();
         }
-        if (name != null) {
+        if (name != null && !name.isEmpty()) {
             List<Book> books = persistenceService.getAllByName(name);
             List<BookDto> dtos = mapper.map(books);
             return Response.status(200).entity(dtos).build();

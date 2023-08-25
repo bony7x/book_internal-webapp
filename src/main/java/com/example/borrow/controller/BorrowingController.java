@@ -67,25 +67,21 @@ public class BorrowingController {
         if (bookId != null && customerId != null) {
             List<Borrowing> borrowings = persistenceService.getBorrowingsByBookIdAndCustomerId(bookId, customerId);
             List<BorrowingDto> dto = mapper.mapToBDto(borrowings);
-            BorrowingsDto dtos = mapper.map(dto);
-            return Response.status(200).entity(dtos).build();
+            return Response.status(200).entity(dto).build();
         }
         if (bookId != null) {
             List<Borrowing> borrowings = persistenceService.getBorrowingsByBookId(bookId);
             List<BorrowingDto> dto = mapper.mapToBDto(borrowings);
-            BorrowingsDto dtos = mapper.map(dto);
-            return Response.status(200).entity(dtos).build();
+            return Response.status(200).entity(dto).build();
         }
         if (customerId != null) {
             List<Borrowing> borrowings = persistenceService.getBorrowingsByCustomerId(customerId);
             List<BorrowingDto> dto = mapper.mapToBDto(borrowings);
-            BorrowingsDto dtos = mapper.map(dto);
-            return Response.status(200).entity(dtos).build();
+            return Response.status(200).entity(dto).build();
         }
         List<Borrowing> borrowings = persistenceService.getBorrowings();
         List<BorrowingDto> dto = mapper.mapToBDto(borrowings);
-        BorrowingsDto dtos = mapper.map(dto);
-        return Response.status(200).entity(dtos).build();
+        return Response.status(200).entity(dto).build();
     }
 
     @GET
