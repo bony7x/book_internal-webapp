@@ -7,10 +7,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class CustomerDto {
-
+@NoArgsConstructor
+public class SendCustomerDto {
     private Integer id;
 
     private String firstName;
@@ -19,5 +18,5 @@ public class CustomerDto {
 
     private String email;
 
-    private List<SendBorrowingsDto> borrowings;
+    private List<Integer> borrowings;
 }

@@ -12,6 +12,8 @@ public class SendBorrowingsDto {
 
     private Integer id;
 
-    private LocalDate date;
+    private LocalDate dateOfBorrowing;
+
+    private SendBookDto book;
 
 }

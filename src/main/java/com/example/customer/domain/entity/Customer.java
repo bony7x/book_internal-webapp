@@ -39,7 +39,7 @@ public class Customer {
     @Column(name = "email")
     private String email;
 
-    @OneToMany(fetch = FetchType.LAZY,mappedBy = "customer")
+    @OneToMany(fetch = FetchType.EAGER,mappedBy = "customer")
 /*    @JoinTable(
             name = "brw__book_borrowing",
             joinColumns = {@JoinColumn(name = "customer_id")},
