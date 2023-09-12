@@ -30,7 +30,7 @@ public class BookCategory {
     @Column(name = "name")
     private String name;
 
-    @ManyToMany(mappedBy = "categories",fetch = FetchType.LAZY)
+    @ManyToMany(mappedBy = "categories",fetch = FetchType.EAGER)
     @ToString.Exclude
     private List<Book> books;
 }
