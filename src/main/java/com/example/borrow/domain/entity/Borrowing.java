@@ -39,11 +39,11 @@ public class Borrowing {
     @Temporal(TemporalType.DATE)
     private LocalDate dateOfBorrowing;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @ToString.Exclude
     private Book book;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @ToString.Exclude
     private Customer customer;
 }

@@ -7,6 +7,7 @@ import com.example.borrow.controller.dto.CreateBorrowingDto;
 import com.example.borrow.controller.mapper.BorrowingMapper;
 import com.example.borrow.domain.entity.Borrowing;
 import com.example.borrow.domain.service.BorrowingPersistenceService;
+import com.example.borrow.exception.BorrowingConflictException;
 import com.example.borrow.exception.BorrowingNotFoundException;
 import com.example.customer.exception.CustomerNotFoundException;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -53,6 +54,9 @@ public class BorrowingController {
             if (e.getClass().equals(BookNotFoundException.class) || e.getClass()
                     .equals(CustomerNotFoundException.class)) {
                 return Response.status(404).entity(e.getMessage()).build();
+            }
+            if (e.getClass().equals(BorrowingConflictException.class)) {
+                return Response.status(409).entity(e.getMessage()).build();
             }
             return Response.status(400).entity(e.getMessage()).build();
         }

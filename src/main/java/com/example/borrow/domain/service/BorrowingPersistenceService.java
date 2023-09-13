@@ -5,6 +5,7 @@ import com.example.book.domain.service.BookPersistenceService;
 import com.example.book.exception.BookNotFoundException;
 import com.example.borrow.domain.entity.Borrowing;
 import com.example.borrow.domain.repository.BorrowingRepository;
+import com.example.borrow.exception.BorrowingConflictException;
 import com.example.borrow.exception.BorrowingNotFoundException;
 import com.example.customer.domain.entity.Customer;
 import com.example.customer.domain.service.CustomerPersistenceService;
@@ -31,12 +32,15 @@ public class BorrowingPersistenceService {
 
     @Transactional
     public Borrowing createBorrowing(Integer bookId, Integer customerId)
-            throws BookNotFoundException, CustomerNotFoundException {
+            throws BookNotFoundException, CustomerNotFoundException, BorrowingConflictException {
         log.debug("createBorrowing: {} {}", bookId, customerId);
 
         Borrowing borrowing = new Borrowing();
         Book book = bookPersistenceService.getById(bookId);
         Customer customer = customerPersistenceService.getCustomerById(customerId);
+        if (book.getCount() == 0) {
+            throw new BorrowingConflictException("This book is not available!");
+        }
         book.setCount(book.getCount() - 1);
         borrowing.setBook(book);
         borrowing.setCustomer(customer);
