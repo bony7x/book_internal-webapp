@@ -24,36 +24,43 @@ public class BookService {
     BookCategoryPersistenceService bookCategoryPersistenceService;
 
     @Transactional
-    public Book addCategory(Integer bookId, Integer categoryId)
+    public Book addCategory(Integer bookId, Integer[] categoryId)
             throws BookNotFoundException, BookCategoryNotFoundException, BookCategoryConflictException {
         log.debug("addCategory: {} {}", bookId, categoryId);
 
         Book book = service.getById(bookId);
-        BookCategory category = bookCategoryPersistenceService.getBookCategory(categoryId);
-        boolean addable = book.getCategories().stream().anyMatch(bookCategory -> bookCategory.equals(category));
-        if (!addable) {
-            book.getCategories().add(category);
-            return service.updateBookCategories(bookId, book);
+        for (Integer integer : categoryId) {
+            BookCategory category = bookCategoryPersistenceService.getBookCategory(integer);
+            boolean addable = book.getCategories().stream().anyMatch(bookCategory -> bookCategory.equals(category));
+            if (!addable) {
+                book.getCategories().add(category);
+            } else {
+                throw new BookCategoryConflictException(
+                        String.format("Kniha uz je zaradena do kategorie s nazvom %s", category.getName()));
+            }
         }
-        throw new BookCategoryConflictException(
-                String.format("Kniha uz je zaradena do kategorie s nazvom %s", category.getName()));
+        return service.updateBookCategories(bookId, book);
     }
 
+
     @Transactional
-    public Book deleteCategory(Integer bookId, Integer categoryId)
+    public Book deleteCategory(Integer bookId, Integer[] categoryId)
             throws BookNotFoundException, BookCategoryConflictException {
         log.debug("deleteCategory: {} {}", bookId, categoryId);
 
         Book book = service.getById(bookId);
-        Optional<BookCategory> bookCategory1 = book.getCategories()
-                .stream()
-                .filter(bookCategory -> bookCategory.getId().equals(categoryId)).findFirst();
-        if (bookCategory1.isPresent()) {
-            book.getCategories().remove(bookCategory1.get());
-            return service.updateBookCategories(bookId, book);
+        for (Integer integer : categoryId) {
+            Optional<BookCategory> bookCategory1 = book.getCategories()
+                    .stream()
+                    .filter(bookCategory -> bookCategory.getId().equals(integer)).findFirst();
+            if (bookCategory1.isPresent()) {
+                book.getCategories().remove(bookCategory1.get());
+            } else {
+                throw new BookCategoryConflictException(
+                        String.format("Kniha s nazvom %s nepatri pod kategoriu s ID = %s", book.getName(),
+                                categoryId));
+            }
         }
-        throw new BookCategoryConflictException(
-                String.format("Kniha s nazvom %s nepatri pod kategoriu s ID = %s", book.getName(),
-                        categoryId));
+        return service.updateBookCategories(bookId, book);
     }
 }

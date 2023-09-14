@@ -1,7 +1,6 @@
 package com.example.book.controller;
 
 import com.example.book.controller.dto.BookDto;
-import com.example.book.controller.dto.BooksDto;
 import com.example.book.controller.dto.CreateBookDto;
 import com.example.book.controller.mapper.BookMapper;
 import com.example.book.domain.entity.Book;
@@ -17,7 +16,6 @@ import jakarta.validation.Valid;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
-import jakarta.ws.rs.PATCH;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
@@ -136,9 +134,9 @@ public class BookController {
     }
 
     @PUT
-    @Path("/books/{bookId}/bookCategory/{bookCategoryId}")
+    @Path("/books/{bookId}/bookCategory")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response addBookCategory(@PathParam("bookId") Integer bookId, @PathParam("bookCategoryId") Integer
+    public Response addBookCategory(@PathParam("bookId") Integer bookId, Integer[]
             bookCategoryId) {
         log.debug("addBookCategory: {} {}", bookId, bookCategoryId);
 
@@ -159,9 +157,9 @@ public class BookController {
     }
 
     @DELETE
-    @Path("/books/{bookId}/bookCategory/{bookCategoryId}")
+    @Path("/books/{bookId}/bookCategory")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response removeBookCategory(@PathParam("bookId") Integer bookId, @PathParam("bookCategoryId") Integer
+    public Response removeBookCategory(@PathParam("bookId") Integer bookId, Integer[]
             bookCategoryId) {
         log.debug("removeBookCategory: {} {}", bookId, bookCategoryId);
 
