@@ -68,11 +68,6 @@ public class BorrowingController {
     public Response getBorrowings(@QueryParam("bookId") Integer bookId, @QueryParam("customerId") Integer customerId) {
         log.debug("getBorrowings: {} {}", bookId, customerId);
 
-        if (bookId != null && customerId != null) {
-            List<Borrowing> borrowings = persistenceService.getBorrowingsByBookIdAndCustomerId(bookId, customerId);
-            List<BorrowingDto> dto = mapper.mapToBDto(borrowings);
-            return Response.status(200).entity(dto).build();
-        }
         if (bookId != null) {
             List<Borrowing> borrowings = persistenceService.getBorrowingsByBookId(bookId);
             List<BorrowingDto> dto = mapper.mapToBDto(borrowings);

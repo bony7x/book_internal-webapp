@@ -16,6 +16,7 @@ import jakarta.validation.Valid;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.PATCH;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
@@ -59,11 +60,6 @@ public class BookController {
     public Response getBooks(@QueryParam("name") String name, @QueryParam("categoryId") Integer categoryId) {
         log.debug("getBooks: {} {}", name, categoryId);
 
-        if (name != null && categoryId != null && !name.isEmpty()) {
-            List<Book> books = persistenceService.getAllByNameAndCategoryId(name, categoryId);
-            List<BookDto> dtos = mapper.map(books);
-            return Response.status(200).entity(dtos).build();
-        }
         if (name != null && !name.isEmpty()) {
             List<Book> books = persistenceService.getAllByName(name);
             List<BookDto> dtos = mapper.map(books);
@@ -133,46 +129,21 @@ public class BookController {
         }
     }
 
+
     @PUT
     @Path("/books/{bookId}/bookCategory")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response addBookCategory(@PathParam("bookId") Integer bookId, Integer[]
-            bookCategoryId) {
-        log.debug("addBookCategory: {} {}", bookId, bookCategoryId);
+    public Response updateBookCategories(@PathParam("bookId") Integer bookId, Integer[] categoryIds) {
+        log.debug("updateBookCategories: {} {}", bookId, categoryIds);
 
         try {
-            Book book = service.addCategory(bookId, bookCategoryId);
+            Book book = service.updateCategories(bookId, categoryIds);
             BookDto dto = mapper.map(book);
             return Response.status(200).entity(dto).build();
         } catch (Exception e) {
             if (e.getClass().equals(BookNotFoundException.class) ||
-                    e.getClass().equals(BookCategoryNotFoundException.class)) {
+                    e.getMessage().equals(BookCategoryNotFoundException.class)) {
                 return Response.status(404).entity(e.getMessage()).build();
-            }
-            if (e.getClass().equals(BookCategoryConflictException.class)) {
-                return Response.status(409).entity(e.getMessage()).build();
-            }
-            return Response.status(400).entity(e.getMessage()).build();
-        }
-    }
-
-    @DELETE
-    @Path("/books/{bookId}/bookCategory")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response removeBookCategory(@PathParam("bookId") Integer bookId, Integer[]
-            bookCategoryId) {
-        log.debug("removeBookCategory: {} {}", bookId, bookCategoryId);
-
-        try {
-            Book book = service.deleteCategory(bookId, bookCategoryId);
-            BookDto dto = mapper.map(book);
-            return Response.status(200).entity(dto).build();
-        } catch (Exception e) {
-            if (e.getClass().equals(BookNotFoundException.class)) {
-                return Response.status(404).entity(e.getMessage()).build();
-            }
-            if (e.getClass().equals(BookCategoryConflictException.class)) {
-                return Response.status(409).entity(e.getMessage()).build();
             }
             return Response.status(400).entity(e.getMessage()).build();
         }

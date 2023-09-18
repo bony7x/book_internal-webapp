@@ -8,6 +8,7 @@ import com.example.category.controller.dto.CreateBookCategoryDto;
 import com.example.category.domain.entity.BookCategory;
 import com.example.category.domain.repository.BookCategoryRepository;
 import com.example.category.exception.BookCategoryNotFoundException;
+import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.criteria.CriteriaBuilder.In;
@@ -48,7 +49,7 @@ public class BookCategoryPersistenceService {
     public List<BookCategory> getAll() {
         log.debug("getAll");
 
-        return repository.listAll();
+        return repository.listAll(Sort.by("id").ascending());
     }
 
     public List<BookCategory> getAllByName(String name){

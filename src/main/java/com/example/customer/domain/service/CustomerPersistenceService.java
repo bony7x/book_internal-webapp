@@ -4,6 +4,7 @@ import com.example.borrow.exception.BorrowingConflictException;
 import com.example.customer.domain.entity.Customer;
 import com.example.customer.domain.repository.CustomerRepository;
 import com.example.customer.exception.CustomerNotFoundException;
+import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -28,7 +29,7 @@ public class CustomerPersistenceService {
     public List<Customer> getAll() {
         log.debug("getAll");
 
-        return repository.listAll();
+        return repository.listAll(Sort.by("id").ascending());
     }
 
     public List<Customer> getAllByFirstName(String firstName) {

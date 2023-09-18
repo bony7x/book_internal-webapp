@@ -5,6 +5,7 @@ import com.example.book.domain.repository.BookRepository;
 import com.example.book.exception.BookNotFoundException;
 import com.example.borrow.exception.BorrowingConflictException;
 import com.example.category.domain.service.BookCategoryPersistenceService;
+import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -17,9 +18,6 @@ public class BookPersistenceService {
 
     @Inject
     BookRepository repository;
-
-    @Inject
-    BookCategoryPersistenceService bookCategoryPersistenceService;
 
     public BookPersistenceService(BookRepository repository) {
         this.repository = repository;
@@ -36,14 +34,7 @@ public class BookPersistenceService {
     public List<Book> getAllBooks() {
         log.debug("getAllBooks");
 
-        return repository.listAll();
-    }
-
-    public List<Book> getAllByNameAndCategoryId(String name, Integer categoryId) {
-        log.debug("getAllByNameAndCategoryId: {}", name);
-
-        return repository.list("Select e from Book e join fetch e.categories c where e.name = ?1 and c.id = ?2", name,
-                categoryId);
+        return repository.listAll(Sort.by("id").ascending());
     }
 
     public List<Book> getAllByName(String name) {
