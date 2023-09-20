@@ -8,6 +8,7 @@ import com.example.category.controller.dto.CreateBookCategoryDto;
 import com.example.category.domain.entity.BookCategory;
 import com.example.category.domain.repository.BookCategoryRepository;
 import com.example.category.exception.BookCategoryNotFoundException;
+import com.example.request.ExtendedRequest;
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -46,10 +47,21 @@ public class BookCategoryPersistenceService {
         return bookCategory;
     }
 
-    public List<BookCategory> getAll() {
+    public List<BookCategory> getAll(ExtendedRequest request) {
+        log.debug("getAll: {}", request);
+
+        if(request.getSortable().isAscending()){
+            return repository.listAll(Sort.by(request.getSortable().getColumn()).ascending());
+        } else {
+            return repository.listAll(Sort.by(request.getSortable().getColumn()).descending());
+
+        }
+    }
+
+    public List<BookCategory> getAll(){
         log.debug("getAll");
 
-        return repository.listAll(Sort.by("id").ascending());
+        return repository.listAll();
     }
 
     public List<BookCategory> getAllByName(String name){

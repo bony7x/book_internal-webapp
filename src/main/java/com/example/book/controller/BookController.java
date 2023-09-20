@@ -10,6 +10,7 @@ import com.example.book.exception.BookNotFoundException;
 import com.example.book.service.BookService;
 import com.example.borrow.exception.BorrowingConflictException;
 import com.example.category.exception.BookCategoryNotFoundException;
+import com.example.request.ExtendedRequest;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -52,6 +53,18 @@ public class BookController {
         Book book = persistenceService.persist(mapper.map(createBookDto));
         BookDto dto = mapper.map(book);
         return Response.status(201).entity(dto).build();
+    }
+
+    @POST
+    @Path("/books/all")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response getAllBooks(ExtendedRequest request){
+        log.debug("getAllBooks: {}", request);
+
+        List<Book> books = persistenceService.getAllBooks(request);
+        List<BookDto> dtos = mapper.map(books);
+        return Response.status(200).entity(dtos).build();
     }
 
     @GET

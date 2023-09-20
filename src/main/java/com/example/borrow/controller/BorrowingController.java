@@ -10,6 +10,7 @@ import com.example.borrow.domain.service.BorrowingPersistenceService;
 import com.example.borrow.exception.BorrowingConflictException;
 import com.example.borrow.exception.BorrowingNotFoundException;
 import com.example.customer.exception.CustomerNotFoundException;
+import com.example.request.ExtendedRequest;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -62,6 +63,18 @@ public class BorrowingController {
         }
     }
 
+    @POST
+    @Path("/borrowings/all")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response getAllBorrowings(ExtendedRequest request){
+        log.debug("getAllBorrowings: {}", request);
+
+        List<Borrowing> borrowings = persistenceService.getBorrowings(request);
+        List<BorrowingDto> dto = mapper.mapToBDto(borrowings);
+        return Response.status(200).entity(dto).build();
+    }
+
     @GET
     @Path("/borrowings")
     @Produces(MediaType.APPLICATION_JSON)
@@ -78,9 +91,7 @@ public class BorrowingController {
             List<BorrowingDto> dto = mapper.mapToBDto(borrowings);
             return Response.status(200).entity(dto).build();
         }
-        List<Borrowing> borrowings = persistenceService.getBorrowings();
-        List<BorrowingDto> dto = mapper.mapToBDto(borrowings);
-        return Response.status(200).entity(dto).build();
+        return null;
     }
 
     @GET

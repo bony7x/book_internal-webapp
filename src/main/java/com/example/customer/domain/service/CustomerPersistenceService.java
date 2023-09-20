@@ -4,6 +4,7 @@ import com.example.borrow.exception.BorrowingConflictException;
 import com.example.customer.domain.entity.Customer;
 import com.example.customer.domain.repository.CustomerRepository;
 import com.example.customer.exception.CustomerNotFoundException;
+import com.example.request.ExtendedRequest;
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -26,10 +27,20 @@ public class CustomerPersistenceService {
         return customer;
     }
 
-    public List<Customer> getAll() {
+    public List<Customer> getAll(ExtendedRequest request) {
         log.debug("getAll");
 
-        return repository.listAll(Sort.by("id").ascending());
+        if(request.getSortable().isAscending()){
+            return repository.listAll(Sort.by(request.getSortable().getColumn()).ascending());
+        } else {
+            return repository.listAll(Sort.by(request.getSortable().getColumn()).descending());
+        }
+    }
+
+    public List<Customer> getAll(){
+        log.debug("getAll");
+
+        return repository.listAll();
     }
 
     public List<Customer> getAllByFirstName(String firstName) {

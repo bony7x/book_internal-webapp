@@ -7,6 +7,7 @@ import com.example.customer.controller.mapper.CustomerMapper;
 import com.example.customer.domain.entity.Customer;
 import com.example.customer.domain.service.CustomerPersistenceService;
 import com.example.customer.exception.CustomerNotFoundException;
+import com.example.request.ExtendedRequest;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -22,7 +23,6 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import java.util.List;
-import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 
 @ApplicationScoped
@@ -48,13 +48,25 @@ public class CustomerController {
         return Response.status(201).entity(dto).build();
     }
 
+    @POST
+    @Path("/customers/all")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response getAllCustomers(ExtendedRequest request) {
+        log.debug("getAllCustomers: {}", request);
+
+        List<Customer> customers = persistenceService.getAll(request);
+        List<CustomerDto> dto = mapper.map(customers);
+        return Response.status(200).entity(dto).build();
+    }
+
     @GET
     @Path("/customers")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getCustomers(@QueryParam("firstName") String firstName, @QueryParam("lastName") String lastName) {
         log.debug("getCustomers: {} {}", firstName, lastName);
 
-        if (firstName != null && lastName != null &&!firstName.isEmpty()&& !lastName.isEmpty())  {
+        if (firstName != null && lastName != null && !firstName.isEmpty() && !lastName.isEmpty()) {
             List<Customer> customers = persistenceService.getAllByFirstNameAndLastName(firstName, lastName);
             List<CustomerDto> dto = mapper.map(customers);
             return Response.status(200).entity(dto).build();

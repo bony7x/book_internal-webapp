@@ -10,6 +10,7 @@ import com.example.borrow.exception.BorrowingNotFoundException;
 import com.example.customer.domain.entity.Customer;
 import com.example.customer.domain.service.CustomerPersistenceService;
 import com.example.customer.exception.CustomerNotFoundException;
+import com.example.request.ExtendedRequest;
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -50,10 +51,14 @@ public class BorrowingPersistenceService {
         return borrowing;
     }
 
-    public List<Borrowing> getBorrowings() {
-        log.debug("getBorrowings");
+    public List<Borrowing> getBorrowings(ExtendedRequest request) {
+        log.debug("getBorrowings: {}", request);
 
-        return repository.listAll(Sort.by("id").ascending());
+        if(request.getSortable().isAscending()){
+            return repository.listAll(Sort.by(request.getSortable().getColumn()).ascending());
+        } else {
+            return repository.listAll(Sort.by(request.getSortable().getColumn()).descending());
+        }
     }
 
     public List<Borrowing> getBorrowingsByBookId(Integer id) {

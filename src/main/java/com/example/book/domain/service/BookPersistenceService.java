@@ -4,7 +4,7 @@ import com.example.book.domain.entity.Book;
 import com.example.book.domain.repository.BookRepository;
 import com.example.book.exception.BookNotFoundException;
 import com.example.borrow.exception.BorrowingConflictException;
-import com.example.category.domain.service.BookCategoryPersistenceService;
+import com.example.request.ExtendedRequest;
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -31,15 +31,27 @@ public class BookPersistenceService {
         return book;
     }
 
+    public List<Book> getAllBooks(ExtendedRequest extendedRequest) {
+        log.debug("getAllBooks");
+
+        List<Book> books;
+        if (extendedRequest.getSortable().isAscending()) {
+            books = repository.listAll(Sort.by(extendedRequest.getSortable().getColumn()).ascending());
+        } else {
+            books = repository.listAll(Sort.by(extendedRequest.getSortable().getColumn()).descending());
+        }
+        return books;
+    }
+
     public List<Book> getAllBooks() {
         log.debug("getAllBooks");
 
-        return repository.listAll(Sort.by("id").ascending());
+        return repository.listAll();
     }
 
     public List<Book> getAllByName(String name) {
         log.debug("getAllByName: {}", name);
-        name = "%" + name +"%";
+        name = "%" + name + "%";
         name = name.toLowerCase();
 
         return repository.list("select e from Book e where lower(e.name) like ?1", name);

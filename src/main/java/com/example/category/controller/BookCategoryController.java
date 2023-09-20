@@ -7,6 +7,7 @@ import com.example.category.controller.mapper.BookCategoryMapper;
 import com.example.category.domain.entity.BookCategory;
 import com.example.category.domain.service.BookCategoryPersistenceService;
 import com.example.category.exception.BookCategoryNotFoundException;
+import com.example.request.ExtendedRequest;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -46,6 +47,18 @@ public class BookCategoryController {
         BookCategory bookCategory = persistenceService.persist(mapper.map(dto));
         BookCategoryDto responseDto = mapper.map(bookCategory);
         return Response.status(201).entity(responseDto).build();
+    }
+
+    @POST
+    @Path("/bookCategories/all")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response getAllBookCategories(ExtendedRequest request){
+        log.debug("getAllBookCategories: {}", request);
+
+        List<BookCategory> books = persistenceService.getAll(request);
+        List<BookCategoryDto> dtos = mapper.map(books);
+        return Response.status(200).entity(dtos).build();
     }
 
     @GET
