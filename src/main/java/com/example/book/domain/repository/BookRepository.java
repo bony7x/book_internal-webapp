@@ -11,5 +11,4 @@ import java.util.UUID;
 @ApplicationScoped
 public class BookRepository implements PanacheRepository<Book> {
 
-
 }
