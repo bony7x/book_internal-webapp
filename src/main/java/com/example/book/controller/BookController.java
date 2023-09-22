@@ -1,11 +1,11 @@
 package com.example.book.controller;
 
 import com.example.book.controller.dto.BookDto;
+import com.example.book.controller.dto.BookResponse;
 import com.example.book.controller.dto.CreateBookDto;
 import com.example.book.controller.mapper.BookMapper;
 import com.example.book.domain.entity.Book;
 import com.example.book.domain.service.BookPersistenceService;
-import com.example.book.exception.BookCategoryConflictException;
 import com.example.book.exception.BookNotFoundException;
 import com.example.book.service.BookService;
 import com.example.borrow.exception.BorrowingConflictException;
@@ -17,7 +17,6 @@ import jakarta.validation.Valid;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
-import jakarta.ws.rs.PATCH;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
@@ -59,12 +58,24 @@ public class BookController {
     @Path("/books/all")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response getAllBooks(ExtendedRequest request){
+    public Response getAllBooks(ExtendedRequest request) {
         log.debug("getAllBooks: {}", request);
 
+        int fromIndex = 0;
+        int toIndex;
         List<Book> books = persistenceService.getAllBooks(request);
-        List<BookDto> dtos = mapper.map(books);
-        return Response.status(200).entity(dtos).build();
+        if (request.getPageable().getPageNumber() != 1) {
+            fromIndex = (request.getPageable().getPageNumber() - 1) * request.getPageable().getPageSize();
+        }
+        if (fromIndex + request.getPageable().getPageSize() > books.size()) {
+            toIndex = books.size();
+        } else {
+            toIndex = fromIndex + request.getPageable().getPageSize();
+        }
+        List<Book> sublist = books.subList(fromIndex, toIndex);
+        List<BookDto> dtos = mapper.map(sublist);
+        BookResponse response = mapper.mapToResponse(dtos, request, books.size());
+        return Response.status(200).entity(response).build();
     }
 
     @GET

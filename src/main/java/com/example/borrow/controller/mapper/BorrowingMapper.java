@@ -1,10 +1,14 @@
 package com.example.borrow.controller.mapper;
 
+import com.example.book.controller.dto.BookDto;
+import com.example.book.controller.dto.BookResponse;
 import com.example.borrow.controller.dto.BorrowingDto;
+import com.example.borrow.controller.dto.BorrowingResponse;
 import com.example.borrow.controller.dto.BorrowingsDto;
 import com.example.borrow.controller.dto.CreateBorrowingDto;
 import com.example.borrow.domain.entity.Borrowing;
 import com.example.category.domain.entity.BookCategory;
+import com.example.request.ExtendedRequest;
 import jakarta.persistence.criteria.CriteriaBuilder.In;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +21,15 @@ public abstract class BorrowingMapper {
     public abstract Borrowing map(CreateBorrowingDto dto);
 
     public abstract CreateBorrowingDto map(Borrowing borrowing);
+
+    public BorrowingResponse mapToResponse(List<BorrowingDto> borrowings, ExtendedRequest extendedRequest, Integer size){
+        BorrowingResponse borrowingResponse = new BorrowingResponse();
+        borrowingResponse.setBorrowings(borrowings);
+        borrowingResponse.setPageSize(extendedRequest.getPageable().getPageSize());
+        borrowingResponse.setPageNumber(extendedRequest.getPageable().getPageNumber());
+        borrowingResponse.setTotalCount(size);
+        return borrowingResponse;
+    }
 
     @Mapping(target = "book",source = "borrowing.book")
     @Mapping(target = "customer",source = "borrowing.customer")

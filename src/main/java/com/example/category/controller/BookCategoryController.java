@@ -1,7 +1,10 @@
 package com.example.category.controller;
 
+import com.example.book.controller.dto.BookResponse;
+import com.example.book.domain.entity.Book;
 import com.example.category.controller.dto.BookCategoriesDto;
 import com.example.category.controller.dto.BookCategoryDto;
+import com.example.category.controller.dto.BookCategoryResponse;
 import com.example.category.controller.dto.CreateBookCategoryDto;
 import com.example.category.controller.mapper.BookCategoryMapper;
 import com.example.category.domain.entity.BookCategory;
@@ -56,9 +59,21 @@ public class BookCategoryController {
     public Response getAllBookCategories(ExtendedRequest request){
         log.debug("getAllBookCategories: {}", request);
 
-        List<BookCategory> books = persistenceService.getAll(request);
-        List<BookCategoryDto> dtos = mapper.map(books);
-        return Response.status(200).entity(dtos).build();
+        int fromIndex = 0;
+        int toIndex;
+        List<BookCategory> bookCategories = persistenceService.getAll(request);
+        if (request.getPageable().getPageNumber() != 1) {
+            fromIndex = (request.getPageable().getPageNumber() - 1) * request.getPageable().getPageSize();
+        }
+        if (fromIndex + request.getPageable().getPageSize() > bookCategories.size()) {
+            toIndex = bookCategories.size();
+        } else {
+            toIndex = fromIndex + request.getPageable().getPageSize();
+        }
+        List<BookCategory> sublist = bookCategories.subList(fromIndex, toIndex);
+        List<BookCategoryDto> dtos = mapper.map(sublist);
+        BookCategoryResponse response = mapper.mapToResponse(dtos, request, bookCategories.size());
+        return Response.status(200).entity(response).build();
     }
 
     @GET

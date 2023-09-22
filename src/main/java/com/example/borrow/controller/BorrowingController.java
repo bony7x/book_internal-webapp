@@ -1,7 +1,10 @@
 package com.example.borrow.controller;
 
+import com.example.book.controller.dto.BookResponse;
+import com.example.book.domain.entity.Book;
 import com.example.book.exception.BookNotFoundException;
 import com.example.borrow.controller.dto.BorrowingDto;
+import com.example.borrow.controller.dto.BorrowingResponse;
 import com.example.borrow.controller.dto.BorrowingsDto;
 import com.example.borrow.controller.dto.CreateBorrowingDto;
 import com.example.borrow.controller.mapper.BorrowingMapper;
@@ -70,9 +73,21 @@ public class BorrowingController {
     public Response getAllBorrowings(ExtendedRequest request){
         log.debug("getAllBorrowings: {}", request);
 
+        int fromIndex = 0;
+        int toIndex;
         List<Borrowing> borrowings = persistenceService.getBorrowings(request);
-        List<BorrowingDto> dto = mapper.mapToBDto(borrowings);
-        return Response.status(200).entity(dto).build();
+        if (request.getPageable().getPageNumber() != 1) {
+            fromIndex = (request.getPageable().getPageNumber() - 1) * request.getPageable().getPageSize();
+        }
+        if (fromIndex + request.getPageable().getPageSize() > borrowings.size()) {
+            toIndex = borrowings.size();
+        } else {
+            toIndex = fromIndex + request.getPageable().getPageSize();
+        }
+        List<Borrowing> sublist = borrowings.subList(fromIndex, toIndex);
+        List<BorrowingDto> dto = mapper.mapToBDto(sublist);
+        BorrowingResponse response = mapper.mapToResponse(dto, request, borrowings.size());
+        return Response.status(200).entity(response).build();
     }
 
     @GET
