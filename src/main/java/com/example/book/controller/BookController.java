@@ -25,6 +25,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 
@@ -63,6 +64,8 @@ public class BookController {
 
         int fromIndex = 0;
         int toIndex;
+        List<Book> sublist;
+        List<Book> sublistDesc = new ArrayList<>();
         List<Book> books = persistenceService.getAllBooks(request);
         if (request.getPageable().getPageNumber() != 1) {
             fromIndex = (request.getPageable().getPageNumber() - 1) * request.getPageable().getPageSize();
@@ -72,7 +75,7 @@ public class BookController {
         } else {
             toIndex = fromIndex + request.getPageable().getPageSize();
         }
-        List<Book> sublist = books.subList(fromIndex, toIndex);
+        sublist = books.subList(fromIndex, toIndex);
         List<BookDto> dtos = mapper.map(sublist);
         BookResponse response = mapper.mapToResponse(dtos, request, books.size());
         return Response.status(200).entity(response).build();
