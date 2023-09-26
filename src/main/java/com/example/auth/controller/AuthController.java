@@ -3,7 +3,6 @@ package com.example.auth.controller;
 import com.example.auth.controller.dto.LoginDto;
 import com.example.auth.controller.mapper.LoginMapper;
 import com.example.auth.domain.entity.Login;
-import com.example.auth.domain.service.AuthenticationPersistenceService;
 import com.example.auth.exception.UserConflictException;
 import com.example.auth.exception.UserNotFoundException;
 import com.example.auth.service.AuthenticationService;
@@ -41,7 +40,7 @@ public class AuthController {
             LoginDto logged = mapper.map(login);
             return Response.status(201).entity(logged).build();
         } catch (Exception e) {
-            if(e.getClass().equals(UserConflictException.class)){
+            if (e.getClass().equals(UserConflictException.class)) {
                 return Response.status(409).entity(e.getMessage()).build();
             }
             return Response.status(400).entity(e.getMessage()).build();
@@ -60,32 +59,23 @@ public class AuthController {
             LoginDto logged = mapper.map(login);
             return Response.status(200).entity(logged).build();
         } catch (Exception e) {
-            if(e.getClass().equals(UserConflictException.class)){
+            if (e.getClass().equals(UserConflictException.class)) {
                 return Response.status(409).entity(e.getMessage()).build();
             }
-            if(e.getClass().equals(UserNotFoundException.class)){
+            if (e.getClass().equals(UserNotFoundException.class)) {
                 return Response.status(404).entity(e.getMessage()).build();
             }
             return Response.status(400).entity(e.getMessage()).build();
         }
     }
 
-    @PUT
+    @POST
     @Path("/logout")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response logoutClient(LoginDto dto) {
-        log.debug("logoutClient: {}", dto);
+    public Response logoutClient() {
+        log.debug("logoutClient");
 
-        try {
-            Login login = service.logout(mapper.map(dto));
-            LoginDto logged = mapper.map(login);
-            return Response.status(200).entity(logged).build();
-        } catch (Exception e) {
-            if(e.getClass().equals(UserConflictException.class)){
-                return Response.status(404).entity(e.getMessage()).build();
-            }
-            return Response.status(400).entity(e.getMessage()).build();
-        }
+        return Response.status(200).build();
     }
 }

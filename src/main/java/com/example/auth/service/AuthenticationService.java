@@ -26,6 +26,9 @@ public class AuthenticationService {
     public Login register(Login login) throws UserConflictException {
         log.debug("register: {}", login);
 
+        if(login.getName().isEmpty() || login.getPassword().isEmpty()){
+            throw new UserConflictException("Username and password can't be empty!");
+        }
         Login log = decode(login);
         Optional<Login> logged = service.getLogin(log);
         if (logged.isPresent()) {
