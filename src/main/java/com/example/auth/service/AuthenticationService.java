@@ -40,23 +40,19 @@ public class AuthenticationService {
     }
 
     @Transactional
-    public Login login(Login login) throws UserNotFoundException, UserConflictException {
+    public String login(Login login) throws UserNotFoundException, UserConflictException {
         log.debug("login: {}", login);
 
         Login log = decode(login);
         Optional<Login> exists = service.getLogin(log);
-        List<Login> loggedList = service.getLogged();
-        if (!loggedList.isEmpty()) {
-            throw new UserConflictException("Another user is already logged in!");
-        }
         if (exists.isEmpty()) {
             throw new UserNotFoundException("User with the name \"" + log.getName() + "\" doesn't exist");
         } else {
-            if (!(exists.get().getPassword().equals(log.getPassword()))) {
+            if (!(exists.get().getPassword().equals(login.getPassword()))) {
                 throw new UserConflictException("Wrong password!");
             }
-            exists.get().setLogged(true);
-            return service.update(exists.get());
+            String loginDetails = log.getName() + ":" + log.getPassword();
+            return Base64.getEncoder().encodeToString(loginDetails.getBytes());
         }
     }
 
