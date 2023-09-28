@@ -30,4 +30,9 @@ public class Login {
 
     @Column(name = "logged")
     private boolean logged;
+
+    public Login(String name, String password) {
+        this.name = name;
+        this.password = password;
+    }
 }

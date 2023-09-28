@@ -40,19 +40,20 @@ public class AuthenticationService {
     }
 
     @Transactional
-    public String login(Login login) throws UserNotFoundException, UserConflictException {
-        log.debug("login: {}", login);
+    public String login(String authString) throws UserNotFoundException, UserConflictException {
+        log.debug("login: {}", authString);
 
-        Login log = decode(login);
-        Optional<Login> exists = service.getLogin(log);
+        authString = authString.replace("Basic ","");
+        String decoded = new String(decoder.decode(authString));
+        String[] split = decoded.split(":");
+        Optional<Login> exists = service.getLogin(new Login(split[0],split[1]));
         if (exists.isEmpty()) {
-            throw new UserNotFoundException("User with the name \"" + log.getName() + "\" doesn't exist");
+            throw new UserNotFoundException("User with the name \"" + split[0] + "\" doesn't exist");
         } else {
-            if (!(exists.get().getPassword().equals(login.getPassword()))) {
+            if (!(exists.get().getPassword().equals(split[1]))) {
                 throw new UserConflictException("Wrong password!");
             }
-            String loginDetails = log.getName() + ":" + log.getPassword();
-            return Base64.getEncoder().encodeToString(loginDetails.getBytes());
+            return authString;
         }
     }
 

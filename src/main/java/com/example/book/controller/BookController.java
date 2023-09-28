@@ -12,14 +12,12 @@ import com.example.borrow.exception.BorrowingConflictException;
 import com.example.category.exception.BookCategoryNotFoundException;
 import com.example.request.ExtendedRequest;
 import jakarta.annotation.security.PermitAll;
-import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
-import jakarta.ws.rs.InternalServerErrorException;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
@@ -30,18 +28,13 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
-import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.microprofile.jwt.JsonWebToken;
 
 @ApplicationScoped
 @Path("/api")
 @Slf4j
 public class BookController {
-
-    @Inject
-    JsonWebToken jwt;
 
     @Inject
     BookPersistenceService persistenceService;
