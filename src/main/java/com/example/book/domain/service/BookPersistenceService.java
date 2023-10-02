@@ -1,10 +1,14 @@
 package com.example.book.domain.service;
 
+import com.example.book.controller.dto.BooksAndCountDto;
 import com.example.book.domain.entity.Book;
 import com.example.book.domain.repository.BookRepository;
 import com.example.book.exception.BookNotFoundException;
-import com.example.borrow.exception.BorrowingConflictException;
+import com.example.borrowing.exception.BorrowingConflictException;
+import com.example.customer.domain.entity.Customer;
 import com.example.request.ExtendedRequest;
+import com.example.utils.CalculateIndex.CalculateIndex;
+import com.example.utils.CalculateIndex.Index;
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -31,16 +35,17 @@ public class BookPersistenceService {
         return book;
     }
 
-    public List<Book> getAllBooks(ExtendedRequest extendedRequest) {
+    public BooksAndCountDto getAllBooks(ExtendedRequest request) {
         log.debug("getAllBooks");
 
-        List<Book> books;
-        if (extendedRequest.getSortable().isAscending()) {
-            books = repository.listAll(Sort.by(extendedRequest.getSortable().getColumn()).ascending());
-        } else {
-            books = repository.listAll(Sort.by(extendedRequest.getSortable().getColumn()).descending());
-        }
-        return books;
+        List<Book> sublist;
+        CalculateIndex calculateIndex = new CalculateIndex();
+        List<Book> books = request.getSortable().isAscending() ? repository.listAll(
+                Sort.by(request.getSortable().getColumn()).ascending())
+                : repository.listAll(Sort.by(request.getSortable().getColumn()).descending());
+        Index indexes = calculateIndex.calculateIndex(request, books.size());
+        sublist = books.subList(indexes.getFromIndex(), indexes.getToIndex());
+        return new BooksAndCountDto(books.size(), sublist);
     }
 
     public List<Book> getAllBooks() {

@@ -1,25 +1,22 @@
 package com.example.customer.controller.mapper;
 
-import com.example.book.controller.dto.BookDto;
-import com.example.book.controller.dto.BookResponse;
-import com.example.borrow.domain.entity.Borrowing;
-import com.example.category.domain.entity.BookCategory;
+import com.example.borrowing.domain.entity.Borrowing;
+import com.example.bookCategory.domain.entity.BookCategory;
 import com.example.customer.controller.dto.CreateCustomerDto;
 import com.example.customer.controller.dto.CustomerDto;
-import com.example.customer.controller.dto.CustomerResponse;
+import com.example.customer.controller.dto.CustomerResponseDto;
 import com.example.customer.controller.dto.CustomersDto;
 import com.example.customer.domain.entity.Customer;
 import com.example.request.ExtendedRequest;
 import java.util.ArrayList;
 import java.util.List;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "cdi")
 public abstract class CustomerMapper {
 
-    public CustomerResponse mapToResponse(List<CustomerDto> customers, ExtendedRequest extendedRequest, Integer size){
-        CustomerResponse customerResponse = new CustomerResponse();
+    public CustomerResponseDto mapToResponse(List<CustomerDto> customers, ExtendedRequest extendedRequest, Integer size){
+        CustomerResponseDto customerResponse = new CustomerResponseDto();
         customerResponse.setCustomers(customers);
         customerResponse.setPageSize(extendedRequest.getPageable().getPageSize());
         customerResponse.setPageNumber(extendedRequest.getPageable().getPageNumber());

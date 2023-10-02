@@ -1,15 +1,16 @@
 package com.example.book.controller;
 
 import com.example.book.controller.dto.BookDto;
-import com.example.book.controller.dto.BookResponse;
+import com.example.book.controller.dto.BookResponseDto;
+import com.example.book.controller.dto.BooksAndCountDto;
 import com.example.book.controller.dto.CreateBookDto;
 import com.example.book.controller.mapper.BookMapper;
 import com.example.book.domain.entity.Book;
 import com.example.book.domain.service.BookPersistenceService;
 import com.example.book.exception.BookNotFoundException;
 import com.example.book.service.BookService;
-import com.example.borrow.exception.BorrowingConflictException;
-import com.example.category.exception.BookCategoryNotFoundException;
+import com.example.borrowing.exception.BorrowingConflictException;
+import com.example.bookCategory.exception.BookCategoryNotFoundException;
 import com.example.request.ExtendedRequest;
 import jakarta.annotation.security.PermitAll;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -24,10 +25,8 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.SecurityContext;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 
@@ -62,24 +61,12 @@ public class BookController {
     @PermitAll
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response getAllBooks(@Context SecurityContext ctx, ExtendedRequest request) {
+    public Response getAllBooks(ExtendedRequest request) {
         log.debug("getAllBooks: {}", request);
 
-        int fromIndex = 0;
-        int toIndex;
-        List<Book> sublist;
-        List<Book> books = persistenceService.getAllBooks(request);
-        if (request.getPageable().getPageNumber() != 1) {
-            fromIndex = (request.getPageable().getPageNumber() - 1) * request.getPageable().getPageSize();
-        }
-        if (fromIndex + request.getPageable().getPageSize() > books.size()) {
-            toIndex = books.size();
-        } else {
-            toIndex = fromIndex + request.getPageable().getPageSize();
-        }
-        sublist = books.subList(fromIndex, toIndex);
-        List<BookDto> dtos = mapper.map(sublist);
-        BookResponse response = mapper.mapToResponse(dtos, request, books.size());
+       BooksAndCountDto booksAndCountDto = persistenceService.getAllBooks(request);
+        List<BookDto> dtos = mapper.map(booksAndCountDto.getBooks());
+        BookResponseDto response = mapper.mapToResponse(dtos, request, booksAndCountDto.getTotalCount());
         return Response.status(200).entity(response).build();
     }
 

@@ -1,9 +1,10 @@
 package com.example.customer.controller;
 
-import com.example.borrow.exception.BorrowingConflictException;
+import com.example.borrowing.exception.BorrowingConflictException;
 import com.example.customer.controller.dto.CreateCustomerDto;
+import com.example.customer.controller.dto.CustomerAndCountDto;
 import com.example.customer.controller.dto.CustomerDto;
-import com.example.customer.controller.dto.CustomerResponse;
+import com.example.customer.controller.dto.CustomerResponseDto;
 import com.example.customer.controller.mapper.CustomerMapper;
 import com.example.customer.domain.entity.Customer;
 import com.example.customer.domain.service.CustomerPersistenceService;
@@ -56,20 +57,9 @@ public class CustomerController {
     public Response getAllCustomers(ExtendedRequest request) {
         log.debug("getAllCustomers: {}", request);
 
-        int fromIndex = 0;
-        int toIndex;
-        List<Customer> customers = persistenceService.getAll(request);
-        if (request.getPageable().getPageNumber() != 1) {
-            fromIndex = (request.getPageable().getPageNumber() - 1) * request.getPageable().getPageSize();
-        }
-        if (fromIndex + request.getPageable().getPageSize() > customers.size()) {
-            toIndex = customers.size();
-        } else {
-            toIndex = fromIndex + request.getPageable().getPageSize();
-        }
-        List<Customer> sublist = customers.subList(fromIndex, toIndex);
-        List<CustomerDto> dto = mapper.map(sublist);
-        CustomerResponse response = mapper.mapToResponse(dto, request, customers.size());
+        CustomerAndCountDto customers = persistenceService.getAll(request);
+        List<CustomerDto> dto = mapper.map(customers.getCustomers());
+        CustomerResponseDto response = mapper.mapToResponse(dto, request, customers.getTotalCount());
         return Response.status(200).entity(response).build();
     }
 

@@ -1,10 +1,13 @@
 package com.example.customer.domain.service;
 
-import com.example.borrow.exception.BorrowingConflictException;
+import com.example.borrowing.exception.BorrowingConflictException;
+import com.example.customer.controller.dto.CustomerAndCountDto;
 import com.example.customer.domain.entity.Customer;
 import com.example.customer.domain.repository.CustomerRepository;
 import com.example.customer.exception.CustomerNotFoundException;
 import com.example.request.ExtendedRequest;
+import com.example.utils.CalculateIndex.CalculateIndex;
+import com.example.utils.CalculateIndex.Index;
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -27,17 +30,20 @@ public class CustomerPersistenceService {
         return customer;
     }
 
-    public List<Customer> getAll(ExtendedRequest request) {
+    public CustomerAndCountDto getAll(ExtendedRequest request) {
         log.debug("getAll");
 
-        if(request.getSortable().isAscending()){
-            return repository.listAll(Sort.by(request.getSortable().getColumn()).ascending());
-        } else {
-            return repository.listAll(Sort.by(request.getSortable().getColumn()).descending());
-        }
+        List<Customer> sublist;
+        CalculateIndex calculateIndex = new CalculateIndex();
+        List<Customer> customers = request.getSortable().isAscending() ? repository.listAll(
+                Sort.by(request.getSortable().getColumn()).ascending())
+                : repository.listAll(Sort.by(request.getSortable().getColumn()).descending());
+        Index indexes = calculateIndex.calculateIndex(request, customers.size());
+        sublist = customers.subList(indexes.getFromIndex(), indexes.getToIndex());
+        return new CustomerAndCountDto(customers.size(), sublist);
     }
 
-    public List<Customer> getAll(){
+    public List<Customer> getAll() {
         log.debug("getAll");
 
         return repository.listAll();

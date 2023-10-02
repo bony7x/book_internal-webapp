@@ -1,6 +1,7 @@
 package com.example.auth.service;
 
-import com.example.auth.domain.entity.Login;
+import com.example.auth.domain.entity.Roles;
+import com.example.auth.domain.entity.User;
 import com.example.auth.domain.service.AuthenticationPersistenceService;
 import com.example.auth.exception.UserConflictException;
 import com.example.auth.exception.UserNotFoundException;
@@ -9,7 +10,7 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import java.util.Base64;
 import java.util.Base64.Decoder;
-import java.util.List;
+import java.util.Base64.Encoder;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 
@@ -21,20 +22,21 @@ public class AuthenticationService {
     AuthenticationPersistenceService service;
 
     Decoder decoder = Base64.getDecoder();
+    Encoder encoder = Base64.getEncoder();
 
     @Transactional
-    public Login register(Login login) throws UserConflictException {
+    public User register(User login) throws UserConflictException {
         log.debug("register: {}", login);
 
         if(login.getName().isEmpty() || login.getPassword().isEmpty()){
             throw new UserConflictException("Username and password can't be empty!");
         }
-        Login log = decode(login);
-        Optional<Login> logged = service.getLogin(log);
+        User log = decode(login);
+        Optional<User> logged = service.getLogin(log);
         if (logged.isPresent()) {
             throw new UserConflictException("User with the name \"" + login.getName() + "\" already exists!");
         } else {
-            log.setLogged(false);
+            log.setRole(Roles.USER);
             return service.persist(log);
         }
     }
@@ -46,34 +48,21 @@ public class AuthenticationService {
         authString = authString.replace("Basic ","");
         String decoded = new String(decoder.decode(authString));
         String[] split = decoded.split(":");
-        Optional<Login> exists = service.getLogin(new Login(split[0],split[1]));
+        Optional<User> exists = service.getLogin(new User(split[0],split[1]));
         if (exists.isEmpty()) {
             throw new UserNotFoundException("User with the name \"" + split[0] + "\" doesn't exist");
         } else {
             if (!(exists.get().getPassword().equals(split[1]))) {
                 throw new UserConflictException("Wrong password!");
             }
-            return authString;
         }
+        String encodedRole = encoder.encodeToString(("[" + exists.get().getRole().toString()+ "]").getBytes());
+        encodedRole = "[" + encoder.encodeToString(exists.get().getRole().toString().getBytes()) + "]";
+        authString = authString + encodedRole;
+        return authString;
     }
 
-    @Transactional
-    public Login logout(Login login) throws UserConflictException {
-        log.debug("logout: {}", login);
-
-        Login log = decode(login);
-        Optional<Login> exists = service.getLogin(log);
-        if (exists.isEmpty()) {
-            throw new UserConflictException("User with the name \"" + log.getName() + "\" doesn't exist");
-        }
-        if (!(exists.get().getPassword().equals(log.getPassword()))) {
-            throw new UserConflictException("Wrong password!");
-        }
-        exists.get().setLogged(false);
-        return service.update(exists.get());
-    }
-
-    private Login decode(Login login) {
+    private User decode(User login) {
         log.debug("decode: {}", login);
 
         Decoder decoder = Base64.getDecoder();

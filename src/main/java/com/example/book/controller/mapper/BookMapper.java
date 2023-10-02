@@ -1,26 +1,24 @@
 package com.example.book.controller.mapper;
 
 import com.example.book.controller.dto.BookDto;
-import com.example.book.controller.dto.BookResponse;
-import com.example.book.controller.dto.BooksDto;
+import com.example.book.controller.dto.BookResponseDto;
+import com.example.book.controller.dto.BooksAndCountDto;
 import com.example.book.controller.dto.CreateBookDto;
 import com.example.book.controller.dto.SendBorrowingsDto;
 import com.example.book.controller.dto.SendCategoriesDto;
 import com.example.book.domain.entity.Book;
-import com.example.borrow.domain.entity.Borrowing;
-import com.example.category.domain.entity.BookCategory;
+import com.example.borrowing.domain.entity.Borrowing;
+import com.example.bookCategory.domain.entity.BookCategory;
 import com.example.request.ExtendedRequest;
-import jakarta.persistence.criteria.CriteriaBuilder.In;
 import java.util.ArrayList;
 import java.util.List;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "cdi")
 public abstract class BookMapper {
 
-    public BookResponse mapToResponse(List<BookDto> books, ExtendedRequest extendedRequest, Integer size){
-        BookResponse bookResponse = new BookResponse();
+    public BookResponseDto mapToResponse(List<BookDto> books, ExtendedRequest extendedRequest, Integer size){
+        BookResponseDto bookResponse = new BookResponseDto();
         bookResponse.setBooks(books);
         bookResponse.setPageSize(extendedRequest.getPageable().getPageSize());
         bookResponse.setPageNumber(extendedRequest.getPageable().getPageNumber());
@@ -58,8 +56,8 @@ public abstract class BookMapper {
 
     public abstract List<BookDto> map(List<Book> books);
 
-    public BooksDto mapToBooks(List<BookDto> list){
-        BooksDto dto = new BooksDto();
+    public BooksAndCountDto mapToBooks(List<Book> list){
+        BooksAndCountDto dto = new BooksAndCountDto();
         dto.setBooks(list);
         return dto;
     }

@@ -1,7 +1,7 @@
 package com.example.book.domain.entity;
 
-import com.example.borrow.domain.entity.Borrowing;
-import com.example.category.domain.entity.BookCategory;
+import com.example.borrowing.domain.entity.Borrowing;
+import com.example.bookCategory.domain.entity.BookCategory;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -10,15 +10,11 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Inheritance;
-import jakarta.persistence.InheritanceType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
