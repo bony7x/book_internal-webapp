@@ -51,7 +51,7 @@ public class BookPersistenceService {
     public List<Book> getAllBooks() {
         log.debug("getAllBooks");
 
-        return repository.listAll();
+        return repository.listAll(Sort.by("id").ascending());
     }
 
     public List<Book> getAllByName(String name) {

@@ -32,6 +32,8 @@ public abstract class BorrowingMapper {
     @Mapping(target = "customer",source = "borrowing.customer")
     public abstract BorrowingDto mapToDto(Borrowing borrowing);
 
+    public abstract List<BorrowingDto> mapToDtos(List<Borrowing> borrowings);
+
     public List<Integer> mapCategoryToId(List<BookCategory> value){
         List<Integer> list = new ArrayList<>();
         for (BookCategory b : value){

@@ -90,6 +90,16 @@ public class BorrowingPersistenceService {
         throw new BorrowingNotFoundException(String.format("Vypozicanie s ID = %s nebolo najdene", id));
     }
 
+    public List<Borrowing> getBorrowingsById(Integer id) throws BorrowingNotFoundException {
+        log.debug("getBorrowingById: {}", id);
+
+        List<Borrowing> borrowing = repository.list("Select e from Borrowing e where e.id = ?1", id);
+        if (borrowing != null) {
+            return borrowing;
+        }
+        throw new BorrowingNotFoundException(String.format("Vypozicanie s ID = %s nebolo najdene", id));
+    }
+
     @Transactional
     public Borrowing updateBorrowing(Integer id, Integer bookId, Integer customerId)
             throws BookNotFoundException, CustomerNotFoundException, BorrowingNotFoundException {

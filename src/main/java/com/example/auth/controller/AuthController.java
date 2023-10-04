@@ -94,7 +94,7 @@ public class AuthController {
     @Path("/users")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAllUsers() {
-        log.debug("getAllusers");
+        log.debug("getAllUsers");
 
         List<UserDto> dtos = mapper.map(this.persistenceService.getAllUsers());
         return Response.status(200).entity(dtos).build();
@@ -108,6 +108,7 @@ public class AuthController {
         log.debug("updateUserRole: {}", update);
 
         try{
+            update.setRole(update.getRole().toUpperCase());
             persistenceService.updateUserRole(mapper.map(update));
             return Response.status(200).build();
         }catch (Exception e){

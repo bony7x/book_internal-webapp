@@ -103,8 +103,8 @@ public class BorrowingController {
         log.debug("getBorrowing: {}", id);
 
         try {
-            Borrowing borrowing = persistenceService.getBorrowingById(id);
-            BorrowingDto dto = mapper.mapToDto(borrowing);
+            List<Borrowing> borrowing = persistenceService.getBorrowingsById(id);
+            List<BorrowingDto> dto = mapper.mapToDtos(borrowing);
             return Response.status(200).entity(dto).build();
         } catch (Exception e) {
             if (e.getClass().equals(BorrowingNotFoundException.class)) {

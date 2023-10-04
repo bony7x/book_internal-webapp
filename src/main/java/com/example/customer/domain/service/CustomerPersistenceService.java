@@ -46,7 +46,7 @@ public class CustomerPersistenceService {
     public List<Customer> getAll() {
         log.debug("getAll");
 
-        return repository.listAll();
+        return repository.listAll(Sort.by("id").ascending());
     }
 
     public List<Customer> getAllByFirstName(String firstName) {
