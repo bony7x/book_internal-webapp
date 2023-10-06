@@ -27,6 +27,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 
@@ -58,7 +59,6 @@ public class BookController {
 
     @POST
     @Path("/books/all")
-    @PermitAll
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response getAllBooks(ExtendedRequest request) {
@@ -100,9 +100,10 @@ public class BookController {
         try {
             Book book = persistenceService.getById(id);
             BookDto dto = mapper.map(book);
-            return Response.status(200).entity(dto).build();
+            List<BookDto> dtos = new ArrayList<>(List.of(dto));
+            return Response.status(200).entity(dtos).build();
         } catch (Exception e) {
-            return Response.status(404).entity(e.getMessage()).build();
+            return null;
         }
     }
 

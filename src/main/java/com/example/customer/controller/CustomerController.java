@@ -24,6 +24,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 
@@ -98,12 +99,10 @@ public class CustomerController {
         try {
             Customer customer = persistenceService.getCustomerById(id);
             CustomerDto dto = mapper.map(customer);
-            return Response.status(200).entity(dto).build();
+            List<CustomerDto> dtos = new ArrayList<>(List.of(dto));
+            return Response.status(200).entity(dtos).build();
         } catch (Exception e) {
-            if (e.getClass().equals(CustomerNotFoundException.class)) {
-                return Response.status(404).entity(e.getMessage()).build();
-            }
-            return Response.status(400).entity(e.getMessage()).build();
+            return null;
         }
     }
 

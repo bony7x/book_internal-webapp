@@ -2,6 +2,7 @@ package com.example.book.domain.service;
 
 import com.example.book.controller.dto.BooksAndCountDto;
 import com.example.book.domain.entity.Book;
+import com.example.book.domain.entity.BookStatus;
 import com.example.book.domain.repository.BookRepository;
 import com.example.book.exception.BookNotFoundException;
 import com.example.borrowing.exception.BorrowingConflictException;
@@ -31,6 +32,11 @@ public class BookPersistenceService {
     public Book persist(Book book) {
         log.debug("persist: {}", book);
 
+        if(book.getCount() > 0){
+            book.setStatus(BookStatus.AVAILABLE);
+        } else {
+            book.setStatus(BookStatus.NOT_AVAILABLE);
+        }
         repository.persist(book);
         return book;
     }

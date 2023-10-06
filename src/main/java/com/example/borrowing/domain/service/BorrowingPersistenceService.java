@@ -1,6 +1,7 @@
 package com.example.borrowing.domain.service;
 
 import com.example.book.domain.entity.Book;
+import com.example.book.domain.entity.BookStatus;
 import com.example.book.domain.service.BookPersistenceService;
 import com.example.book.exception.BookNotFoundException;
 import com.example.borrowing.controller.dto.BorrowingsAndCountDto;
@@ -47,6 +48,9 @@ public class BorrowingPersistenceService {
             throw new BorrowingConflictException("This book is not available!");
         }
         book.setCount(book.getCount() - 1);
+        if (book.getCount() == 0) {
+            book.setStatus(BookStatus.NOT_AVAILABLE);
+        }
         borrowing.setBook(book);
         borrowing.setCustomer(customer);
         borrowing.setDateOfBorrowing(LocalDate.now());
@@ -119,6 +123,9 @@ public class BorrowingPersistenceService {
         log.debug("deleteBorrowing: {}", id);
 
         Borrowing borrowing = getBorrowingById(id);
+        if (borrowing.getBook().getCount() == 1) {
+            borrowing.getBook().setStatus(BookStatus.AVAILABLE);
+        }
         borrowing.getBook().setCount(borrowing.getBook().getCount() + 1);
         repository.delete(borrowing);
     }
