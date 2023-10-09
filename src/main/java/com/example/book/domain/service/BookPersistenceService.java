@@ -6,7 +6,6 @@ import com.example.book.domain.entity.BookStatus;
 import com.example.book.domain.repository.BookRepository;
 import com.example.book.exception.BookNotFoundException;
 import com.example.borrowing.exception.BorrowingConflictException;
-import com.example.customer.domain.entity.Customer;
 import com.example.request.ExtendedRequest;
 import com.example.utils.CalculateIndex.CalculateIndex;
 import com.example.utils.CalculateIndex.Index;
@@ -15,6 +14,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import java.util.List;
+import java.util.Random;
 import lombok.extern.slf4j.Slf4j;
 
 @ApplicationScoped
@@ -32,7 +32,8 @@ public class BookPersistenceService {
     public Book persist(Book book) {
         log.debug("persist: {}", book);
 
-        if(book.getCount() > 0){
+        book.setIsbn(rng());
+        if (book.getCount() > 0) {
             book.setStatus(BookStatus.AVAILABLE);
         } else {
             book.setStatus(BookStatus.NOT_AVAILABLE);
@@ -117,5 +118,16 @@ public class BookPersistenceService {
         Book book = getById(bookId);
         book.setCategories(update.getCategories());
         return repository.getEntityManager().merge(book);
+    }
+
+    private String rng() {
+        StringBuilder sb = new StringBuilder();
+        int num;
+        for (int i = 0; i < 12; i++) {
+            Random random = new Random();
+            num =  random.nextInt(1, 9);
+            sb.append(num);
+        }
+        return sb.toString();
     }
 }
