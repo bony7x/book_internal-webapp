@@ -2,6 +2,7 @@ package com.example.book.domain.service;
 
 import com.example.book.controller.dto.BooksAndCountDto;
 import com.example.book.domain.entity.Book;
+import com.example.book.domain.entity.BookFilter;
 import com.example.book.domain.entity.BookStatus;
 import com.example.book.domain.repository.BookRepository;
 import com.example.book.exception.BookNotFoundException;
@@ -13,6 +14,7 @@ import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import lombok.extern.slf4j.Slf4j;
@@ -125,9 +127,54 @@ public class BookPersistenceService {
         int num;
         for (int i = 0; i < 12; i++) {
             Random random = new Random();
-            num =  random.nextInt(1, 9);
+            num = random.nextInt(1, 9);
             sb.append(num);
         }
         return sb.toString();
+    }
+
+    public BooksAndCountDto filterBooks(BookFilter filter) {
+        log.debug("filterBooks: {}", filter);
+
+        List<Book> books = new ArrayList<>();
+        if (!filter.getName().isEmpty()) {
+            filter.setName("%" + filter.getName().toLowerCase() + "%");
+        }
+        if (!filter.getAuthor().isEmpty()) {
+            filter.setAuthor("%" + filter.getAuthor().toLowerCase() + "%");
+        }
+        if (!filter.getCategory().isEmpty()) {
+            filter.setCategory("%" + filter.getCategory().toLowerCase() + "%");
+        }
+        if (filter.getName().isEmpty() && filter.getAuthor().isEmpty() && filter.getCategory().isEmpty()) {
+            books = repository.listAll(Sort.by("id").ascending());
+            return new BooksAndCountDto(books.size(), books);
+        }
+        if (!filter.getName().isEmpty() && !filter.getAuthor().isEmpty() && !filter.getCategory().isEmpty()) {
+            books = repository.list(
+                    "Select e from Book e join fetch e.categories c where lower(e.name) like ?1 and lower(e.author) like ?2 and lower(c.name) like ?3",
+                    Sort.by("id").ascending(),
+                    filter.getName(),
+                    filter.getAuthor(), filter.getCategory());
+            return new BooksAndCountDto(books.size(), books);
+        }
+        if (!filter.getName().isEmpty() && !filter.getAuthor().isEmpty() && filter.getCategory().isEmpty()) {
+            books = repository.list("Select e from Book e where lower(e.name) like ?1 and lower(e.author) like ?2",
+                    Sort.by("id").ascending(),
+                    filter.getName(),
+                    filter.getAuthor());
+            return new BooksAndCountDto(books.size(), books);
+        }
+
+        if (!filter.getName().isEmpty()) {
+            books = repository.list("Select e from Book e where lower(e.name) like ?1", Sort.by("id").ascending(),
+                    filter.getName());
+            return new BooksAndCountDto(books.size(), books);
+        }
+        if (!books.isEmpty() && !filter.getAuthor().isEmpty()) {
+            books = books.stream().filter(book -> book.getAuthor().equals(filter.getAuthor())).findAny().stream()
+                    .toList();
+        }
+        return null;
     }
 }

@@ -6,12 +6,15 @@ import com.example.book.controller.dto.BooksAndCountDto;
 import com.example.book.controller.dto.CreateBookDto;
 import com.example.book.controller.mapper.BookMapper;
 import com.example.book.domain.entity.Book;
+import com.example.book.domain.entity.BookFilter;
 import com.example.book.domain.service.BookPersistenceService;
 import com.example.book.exception.BookNotFoundException;
 import com.example.book.service.BookService;
 import com.example.borrowing.exception.BorrowingConflictException;
 import com.example.bookCategory.exception.BookCategoryNotFoundException;
 import com.example.request.ExtendedRequest;
+import com.example.request.Pageable;
+import com.example.request.Sortable;
 import jakarta.annotation.security.PermitAll;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -64,10 +67,26 @@ public class BookController {
     public Response getAllBooks(ExtendedRequest request) {
         log.debug("getAllBooks: {}", request);
 
-       BooksAndCountDto booksAndCountDto = persistenceService.getAllBooks(request);
+        BooksAndCountDto booksAndCountDto = persistenceService.getAllBooks(request);
         List<BookDto> dtos = mapper.map(booksAndCountDto.getBooks());
         BookResponseDto response = mapper.mapToResponse(dtos, request, booksAndCountDto.getTotalCount());
         return Response.status(200).entity(response).build();
+    }
+
+    @POST
+    @Path("/books/filter")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response filterBooks(BookFilter filter) {
+        log.debug("filterBooks: {}", filter);
+
+        BooksAndCountDto booksAndCountDto = persistenceService.filterBooks(filter);
+        List<BookDto> dtos = mapper.map(booksAndCountDto.getBooks());
+        ExtendedRequest er = new ExtendedRequest();
+        er.setSortable(new Sortable("id",true));
+        er.setPageable(new Pageable(1,5));
+        BookResponseDto responseDto = mapper.mapToResponse(dtos,er, booksAndCountDto.getTotalCount());
+        return Response.status(200).entity(responseDto).build();
     }
 
     @GET
