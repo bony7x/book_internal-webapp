@@ -6,6 +6,7 @@ import com.example.book.domain.service.BookPersistenceService;
 import com.example.book.exception.BookNotFoundException;
 import com.example.borrowing.controller.dto.BorrowingsAndCountDto;
 import com.example.borrowing.domain.entity.Borrowing;
+import com.example.borrowing.domain.entity.BorrowingFilter;
 import com.example.borrowing.domain.repository.BorrowingRepository;
 import com.example.borrowing.exception.BorrowingConflictException;
 import com.example.borrowing.exception.BorrowingNotFoundException;
@@ -128,5 +129,72 @@ public class BorrowingPersistenceService {
         }
         borrowing.getBook().setCount(borrowing.getBook().getCount() + 1);
         repository.delete(borrowing);
+    }
+
+    public BorrowingsAndCountDto filterBorrowings(BorrowingFilter filter) {
+        log.debug("filterBorrowings: {}", filter);
+
+        List<Borrowing> borrowings;
+        if (!filter.getName().isEmpty()) {
+            filter.setName("%" + filter.getName().toLowerCase() + "%");
+        }
+        if (!filter.getEmail().isEmpty()) {
+            filter.setEmail("%" + filter.getEmail().toLowerCase() + "%");
+        }
+        if (!filter.getName().isEmpty() && !filter.getEmail().isEmpty() && filter.getDate() != null) {
+            borrowings = repository.list(
+                    "Select e from Borrowing e where lower(e.customer.email) like ?1 and lower(e.book.name) like ?2 and e.dateOfBorrowing = ?3",
+                    Sort.by("id").ascending(),
+                    filter.getEmail(), filter.getName(), filter.getDate()
+            );
+            return new BorrowingsAndCountDto(borrowings.size(), borrowings);
+        }
+        if (!filter.getName().isEmpty() && !filter.getEmail().isEmpty()) {
+            borrowings = repository.list(
+                    "Select e from Borrowing e where lower(e.customer.email) like ?1 and lower(e.book.name) like ?2",
+                    Sort.by("id").ascending(),
+                    filter.getEmail(), filter.getName()
+            );
+            return new BorrowingsAndCountDto(borrowings.size(), borrowings);
+        }
+        if (!filter.getEmail().isEmpty() && filter.getDate() != null) {
+            borrowings = repository.list(
+                    "Select e from Borrowing e where lower(e.customer.email) like ?1 and e.dateOfBorrowing = ?2",
+                    Sort.by("id").ascending(),
+                    filter.getEmail(), filter.getDate()
+            );
+            return new BorrowingsAndCountDto(borrowings.size(), borrowings);
+        }
+        if (!filter.getName().isEmpty() && filter.getDate() != null) {
+            borrowings = repository.list(
+                    "Select e from Borrowing e where lower(e.book.name) like ?1 and e.dateOfBorrowing = ?2",
+                    Sort.by("id").ascending(),
+                    filter.getName(), filter.getDate()
+            );
+            return new BorrowingsAndCountDto(borrowings.size(), borrowings);
+        }
+        if (!filter.getName().isEmpty()) {
+            borrowings = repository.list("Select e from Borrowing e where lower(e.book.name) like ?1",
+                    Sort.by("id").ascending(),
+                    filter.getName()
+            );
+            return new BorrowingsAndCountDto(borrowings.size(), borrowings);
+        }
+        if(!filter.getEmail().isEmpty()){
+            borrowings = repository.list("Select e from Borrowing e where lower(e.customer.email) like ?1",
+                    Sort.by("id").ascending(),
+                    filter.getEmail()
+                    );
+            return new BorrowingsAndCountDto(borrowings.size(), borrowings);
+        }
+        if(filter.getDate() != null){
+            borrowings = repository.list("Select e from Borrowing e where e.dateOfBorrowing = ?1",
+                    Sort.by("id").ascending(),
+                    filter.getDate()
+                    );
+            return new BorrowingsAndCountDto(borrowings.size(), borrowings);
+        }
+        borrowings = repository.listAll(Sort.by("id").ascending());
+        return new BorrowingsAndCountDto(borrowings.size(), borrowings);
     }
 }

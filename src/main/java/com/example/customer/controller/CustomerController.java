@@ -1,5 +1,9 @@
 package com.example.customer.controller;
 
+import com.example.book.controller.dto.BookDto;
+import com.example.book.controller.dto.BookResponseDto;
+import com.example.book.controller.dto.BooksAndCountDto;
+import com.example.book.domain.entity.BookFilter;
 import com.example.borrowing.exception.BorrowingConflictException;
 import com.example.customer.controller.dto.CreateCustomerDto;
 import com.example.customer.controller.dto.CustomerAndCountDto;
@@ -7,9 +11,12 @@ import com.example.customer.controller.dto.CustomerDto;
 import com.example.customer.controller.dto.CustomerResponseDto;
 import com.example.customer.controller.mapper.CustomerMapper;
 import com.example.customer.domain.entity.Customer;
+import com.example.customer.domain.entity.CustomerFilter;
 import com.example.customer.domain.service.CustomerPersistenceService;
 import com.example.customer.exception.CustomerNotFoundException;
 import com.example.request.ExtendedRequest;
+import com.example.request.Pageable;
+import com.example.request.Sortable;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -62,6 +69,22 @@ public class CustomerController {
         List<CustomerDto> dto = mapper.map(customers.getCustomers());
         CustomerResponseDto response = mapper.mapToResponse(dto, request, customers.getTotalCount());
         return Response.status(200).entity(response).build();
+    }
+
+    @POST
+    @Path("/customers/filter")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response filterCustomers(CustomerFilter filter) {
+        log.debug("filterCustomers: {}", filter);
+
+        CustomerAndCountDto customerAndCountDto = persistenceService.filterCustomers(filter);
+        List<CustomerDto> dtos = mapper.map(customerAndCountDto.getCustomers());
+        ExtendedRequest er = new ExtendedRequest();
+        er.setSortable(new Sortable("id",true));
+        er.setPageable(new Pageable(1, customerAndCountDto.getTotalCount()));
+        CustomerResponseDto responseDto = mapper.mapToResponse(dtos,er, customerAndCountDto.getTotalCount());
+        return Response.status(200).entity(responseDto).build();
     }
 
     @GET

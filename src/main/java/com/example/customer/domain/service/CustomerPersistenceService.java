@@ -3,6 +3,7 @@ package com.example.customer.domain.service;
 import com.example.borrowing.exception.BorrowingConflictException;
 import com.example.customer.controller.dto.CustomerAndCountDto;
 import com.example.customer.domain.entity.Customer;
+import com.example.customer.domain.entity.CustomerFilter;
 import com.example.customer.domain.repository.CustomerRepository;
 import com.example.customer.exception.CustomerNotFoundException;
 import com.example.request.ExtendedRequest;
@@ -103,5 +104,76 @@ public class CustomerPersistenceService {
             throw new BorrowingConflictException("Zakaznik, ktory ma vypozicane knihy nemoze byt odstraneny!");
         }
         repository.delete(customer);
+    }
+
+    public CustomerAndCountDto filterCustomers(CustomerFilter filter) {
+        log.debug("filterCustomers: {}", filter);
+
+        List<Customer> customers;
+        if (!filter.getFirstName().isEmpty()) {
+            filter.setFirstName("%" + filter.getFirstName().toLowerCase() + "%");
+        }
+        if (!filter.getLastName().isEmpty()) {
+            filter.setLastName("%" + filter.getLastName().toLowerCase() + "%");
+        }
+        if (!filter.getEmail().isEmpty()) {
+            filter.setEmail("%" + filter.getEmail() + "%");
+        }
+        if (!filter.getFirstName().isEmpty() && !filter.getLastName().isEmpty() && !filter.getEmail().isEmpty()) {
+            customers = repository.list(
+                    "Select e from Customer e where lower(e.firstName) like ?1 and lower(e.lastName) like ?2 and lower(e.email) like ?3",
+                    Sort.by("id").ascending(),
+                    filter.getFirstName(), filter.getLastName(), filter.getEmail()
+            );
+            return new CustomerAndCountDto(customers.size(), customers);
+        }
+        if (!filter.getFirstName().isEmpty() && !filter.getLastName().isEmpty()) {
+            customers = repository.list(
+                    "Select e from Customer e where lower(e.firstName) like ?1 and lower(e.lastName) like ?2",
+                    Sort.by("id").ascending(),
+                    filter.getFirstName(), filter.getLastName()
+            );
+            return new CustomerAndCountDto(customers.size(), customers);
+        }
+        if (!filter.getFirstName().isEmpty() && !filter.getEmail().isEmpty()) {
+            customers = repository.list(
+                    "Select e from Customer e where lower(e.firstName) like ?1 and lower(e.email) like ?2",
+                    Sort.by("id").ascending(),
+                    filter.getFirstName(), filter.getEmail()
+            );
+            return new CustomerAndCountDto(customers.size(), customers);
+        }
+        if (!filter.getLastName().isEmpty() && !filter.getEmail().isEmpty()) {
+            customers = repository.list(
+                    "Select e from Customer e where lower(e.lastName) like ?1 and lower(e.email) like ?2",
+                    Sort.by("id").ascending(),
+                    filter.getLastName(), filter.getEmail()
+            );
+            return new CustomerAndCountDto(customers.size(), customers);
+        }
+        if (!filter.getFirstName().isEmpty()) {
+            customers = repository.list("Select e from Customer e where lower(e.firstName) like ?1",
+                    Sort.by("id").ascending(),
+                    filter.getFirstName()
+            );
+            return new CustomerAndCountDto(customers.size(), customers);
+        }
+        if (!filter.getLastName().isEmpty()) {
+            customers = repository.list("Select e from Customer e where lower(e.lastName) like ?1",
+                    Sort.by("id").ascending(),
+                    filter.getLastName()
+            );
+            return new CustomerAndCountDto(customers.size(), customers);
+        }
+        if(!filter.getEmail().isEmpty()){
+            customers = repository.list("Select e from Customer e where lower(e.email) like ?1",
+                    Sort.by("id").ascending(),
+                    filter.getEmail()
+            );
+            return new CustomerAndCountDto(customers.size(), customers);
+        }
+
+        customers = repository.listAll(Sort.by("id").ascending());
+        return new CustomerAndCountDto(customers.size(), customers);
     }
 }

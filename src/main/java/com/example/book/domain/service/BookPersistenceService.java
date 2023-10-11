@@ -136,7 +136,7 @@ public class BookPersistenceService {
     public BooksAndCountDto filterBooks(BookFilter filter) {
         log.debug("filterBooks: {}", filter);
 
-        List<Book> books = new ArrayList<>();
+        List<Book> books;
         if (!filter.getName().isEmpty()) {
             filter.setName("%" + filter.getName().toLowerCase() + "%");
         }
@@ -146,35 +146,57 @@ public class BookPersistenceService {
         if (!filter.getCategory().isEmpty()) {
             filter.setCategory("%" + filter.getCategory().toLowerCase() + "%");
         }
-        if (filter.getName().isEmpty() && filter.getAuthor().isEmpty() && filter.getCategory().isEmpty()) {
-            books = repository.listAll(Sort.by("id").ascending());
-            return new BooksAndCountDto(books.size(), books);
-        }
         if (!filter.getName().isEmpty() && !filter.getAuthor().isEmpty() && !filter.getCategory().isEmpty()) {
             books = repository.list(
-                    "Select e from Book e join fetch e.categories c where lower(e.name) like ?1 and lower(e.author) like ?2 and lower(c.name) like ?3",
-                    Sort.by("id").ascending(),
+                    "Select e from Book e join e.categories c where lower(e.name) like ?1 and lower(e.author) like ?2 and lower(c.name) like ?3",
+                    Sort.by("e.id").ascending(),
                     filter.getName(),
-                    filter.getAuthor(), filter.getCategory());
+                    filter.getAuthor(),
+                    filter.getCategory());
             return new BooksAndCountDto(books.size(), books);
         }
-        if (!filter.getName().isEmpty() && !filter.getAuthor().isEmpty() && filter.getCategory().isEmpty()) {
+        if (!filter.getName().isEmpty() && !filter.getAuthor().isEmpty()) {
             books = repository.list("Select e from Book e where lower(e.name) like ?1 and lower(e.author) like ?2",
                     Sort.by("id").ascending(),
                     filter.getName(),
                     filter.getAuthor());
             return new BooksAndCountDto(books.size(), books);
         }
-
+        if (!filter.getName().isEmpty() && !filter.getCategory().isEmpty()) {
+            books = repository.list(
+                    "Select e from Book e join e.categories c where lower(e.name) like ?1 and lower(c.name) like ?2",
+                    Sort.by("e.id").ascending(),
+                    filter.getName(),
+                    filter.getCategory());
+            return new BooksAndCountDto(books.size(), books);
+        }
+        if (!filter.getAuthor().isEmpty() && !filter.getCategory().isEmpty()) {
+            books = repository.list(
+                    "Select e from Book e join e.categories c where lower(e.author) like ?1 and lower(c.name) like ?2",
+                    Sort.by("e.id").ascending(),
+                    filter.getAuthor(),
+                    filter.getCategory());
+            return new BooksAndCountDto(books.size(), books);
+        }
         if (!filter.getName().isEmpty()) {
-            books = repository.list("Select e from Book e where lower(e.name) like ?1", Sort.by("id").ascending(),
+            books = repository.list("Select e from Book e where lower(e.name) like ?1",
+                    Sort.by("id").ascending(),
                     filter.getName());
             return new BooksAndCountDto(books.size(), books);
         }
-        if (!books.isEmpty() && !filter.getAuthor().isEmpty()) {
-            books = books.stream().filter(book -> book.getAuthor().equals(filter.getAuthor())).findAny().stream()
-                    .toList();
+        if (!filter.getAuthor().isEmpty()) {
+            books = repository.list("Select e from Book e where lower(e.author) like ?1",
+                    Sort.by("id").ascending(),
+                    filter.getAuthor());
+            return new BooksAndCountDto(books.size(), books);
         }
-        return null;
+        if (!filter.getCategory().isEmpty()) {
+            books = repository.list("Select e from Book e join e.categories c where lower(c.name) like ?1",
+                    Sort.by("e.id").ascending(),
+                    filter.getCategory());
+            return new BooksAndCountDto(books.size(), books);
+        }
+        books = repository.listAll(Sort.by("id").ascending());
+        return new BooksAndCountDto(books.size(), books);
     }
 }

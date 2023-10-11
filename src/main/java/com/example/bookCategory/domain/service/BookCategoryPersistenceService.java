@@ -4,7 +4,9 @@ import com.example.book.domain.entity.Book;
 import com.example.book.domain.repository.BookRepository;
 import com.example.book.domain.service.BookPersistenceService;
 import com.example.bookCategory.controller.dto.BookCategoriesAndCountDto;
+import com.example.bookCategory.controller.dto.BookCategoryDto;
 import com.example.bookCategory.domain.entity.BookCategory;
+import com.example.bookCategory.domain.entity.BookCategoryFilter;
 import com.example.bookCategory.domain.repository.BookCategoryRepository;
 import com.example.bookCategory.exception.BookCategoryNotFoundException;
 import com.example.request.ExtendedRequest;
@@ -102,5 +104,20 @@ public class BookCategoryPersistenceService {
             bookRepository.getEntityManager().merge(book);
         }
         repository.delete(bookCategory);
+    }
+
+    public BookCategoriesAndCountDto filterBookCategories(BookCategoryFilter filter){
+        log.debug("filterBookCategories: {}", filter);
+
+        List<BookCategory> categories;
+        if(!filter.getCategory().isEmpty()){
+            filter.setCategory("%" + filter.getCategory().toLowerCase() + "%");
+            categories = repository.list("Select e from BookCategory e where lower(e.name) like ?1",
+                    Sort.by("id").ascending(),
+            filter.getCategory());
+            return new BookCategoriesAndCountDto(categories.size(),categories);
+        }
+        categories = repository.listAll(Sort.by("id").ascending());
+        return new BookCategoriesAndCountDto(categories.size(), categories);
     }
 }

@@ -56,4 +56,6 @@ public abstract class BorrowingMapper {
         dto.setBorrowings(list);
         return dto;
     }
+
+    public abstract List<BorrowingDto> mapToListDto(List<Borrowing> borrowings);
 }

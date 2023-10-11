@@ -1,14 +1,21 @@
 package com.example.bookCategory.controller;
 
+import com.example.book.controller.dto.BookDto;
+import com.example.book.controller.dto.BookResponseDto;
+import com.example.book.controller.dto.BooksAndCountDto;
+import com.example.book.domain.entity.BookFilter;
 import com.example.bookCategory.controller.dto.BookCategoriesAndCountDto;
 import com.example.bookCategory.controller.dto.BookCategoryDto;
 import com.example.bookCategory.controller.dto.BookCategoryResponseDto;
 import com.example.bookCategory.controller.dto.CreateBookCategoryDto;
 import com.example.bookCategory.controller.mapper.BookCategoryMapper;
 import com.example.bookCategory.domain.entity.BookCategory;
+import com.example.bookCategory.domain.entity.BookCategoryFilter;
 import com.example.bookCategory.domain.service.BookCategoryPersistenceService;
 import com.example.bookCategory.exception.BookCategoryNotFoundException;
 import com.example.request.ExtendedRequest;
+import com.example.request.Pageable;
+import com.example.request.Sortable;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -61,6 +68,22 @@ public class BookCategoryController {
         List<BookCategoryDto> dtos = mapper.map(bookCategories.getBookCategories());
         BookCategoryResponseDto response = mapper.mapToResponse(dtos, request, bookCategories.getTotalCount());
         return Response.status(200).entity(response).build();
+    }
+
+    @POST
+    @Path("/bookCategories/filter")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response filterBookCategories(BookCategoryFilter filter) {
+        log.debug("filterBookCategories: {}", filter);
+
+        BookCategoriesAndCountDto bookCategoriesAndCountDto = persistenceService.filterBookCategories(filter);
+        List<BookCategoryDto> dtos = mapper.map(bookCategoriesAndCountDto.getBookCategories());
+        ExtendedRequest er = new ExtendedRequest();
+        er.setSortable(new Sortable("id",true));
+        er.setPageable(new Pageable(1, bookCategoriesAndCountDto.getTotalCount()));
+        BookCategoryResponseDto responseDto = mapper.mapToResponse(dtos,er, bookCategoriesAndCountDto.getTotalCount());
+        return Response.status(200).entity(responseDto).build();
     }
 
     @GET
