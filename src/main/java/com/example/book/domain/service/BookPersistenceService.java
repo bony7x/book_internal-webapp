@@ -10,11 +10,12 @@ import com.example.borrowing.exception.BorrowingConflictException;
 import com.example.request.ExtendedRequest;
 import com.example.utils.CalculateIndex.CalculateIndex;
 import com.example.utils.CalculateIndex.Index;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.panache.common.Sort;
+import io.quarkus.panache.common.Sort.Direction;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import lombok.extern.slf4j.Slf4j;
@@ -48,13 +49,28 @@ public class BookPersistenceService {
         log.debug("getAllBooks");
 
         List<Book> sublist;
+        BooksAndCountDto filteredBooks;
+        filteredBooks = filterBooks(request);
+        if (filteredBooks == null) {
+            CalculateIndex calculateIndex = new CalculateIndex();
+            List<Book> books = request.getSortable().isAscending() ? repository.listAll(
+                    Sort.by(request.getSortable().getColumn()).ascending())
+                    : repository.listAll(Sort.by(request.getSortable().getColumn()).descending());
+            Index indexes = calculateIndex.calculateIndex(request, books.size());
+            sublist = books.subList(indexes.getFromIndex(), indexes.getToIndex());
+            return new BooksAndCountDto(books.size(), sublist);
+        }
         CalculateIndex calculateIndex = new CalculateIndex();
+        Index indexes = calculateIndex.calculateIndex(request, filteredBooks.getBooks().size());
+        sublist = filteredBooks.getBooks().subList(indexes.getFromIndex(), indexes.getToIndex());
+        return new BooksAndCountDto(filteredBooks.getBooks().size(), sublist);
+/*        CalculateIndex calculateIndex = new CalculateIndex();
         List<Book> books = request.getSortable().isAscending() ? repository.listAll(
                 Sort.by(request.getSortable().getColumn()).ascending())
                 : repository.listAll(Sort.by(request.getSortable().getColumn()).descending());
         Index indexes = calculateIndex.calculateIndex(request, books.size());
         sublist = books.subList(indexes.getFromIndex(), indexes.getToIndex());
-        return new BooksAndCountDto(books.size(), sublist);
+        return new BooksAndCountDto(books.size(), sublist);*/
     }
 
     public List<Book> getAllBooks() {
@@ -133,9 +149,75 @@ public class BookPersistenceService {
         return sb.toString();
     }
 
-    public BooksAndCountDto filterBooks(BookFilter filter) {
-        log.debug("filterBooks: {}", filter);
+    public BooksAndCountDto filterBooks(ExtendedRequest request) {
+        log.debug("filterBooks: {}", request);
 
+        ObjectMapper objectMapper = new ObjectMapper();
+        if(!request.getFilter().isEmpty()){
+            BookFilter filter = objectMapper.convertValue(request.getFilter(), BookFilter.class);
+            List<Book> books;
+            if (!filter.getName().isEmpty()) {
+                filter.setName("%" + filter.getName().toLowerCase() + "%");
+            }
+            if (!filter.getAuthor().isEmpty()) {
+                filter.setAuthor("%" + filter.getAuthor().toLowerCase() + "%");
+            }
+            if (!filter.getCategory().isEmpty()) {
+                filter.setCategory("%" + filter.getCategory().toLowerCase() + "%");
+            }
+            if (!filter.getName().isEmpty() && !filter.getAuthor().isEmpty() && !filter.getCategory().isEmpty()) {
+                books = repository.list(
+                        "Select e from Book e join e.categories c where lower(e.name) like ?1 and lower(e.author) like ?2 and lower(c.name) like ?3",
+                        Sort.by("e." + request.getSortable().getColumn()).direction(
+                                request.getSortable().isAscending() ? Direction.Ascending : Direction.Descending),
+                        filter.getName(),
+                        filter.getAuthor(),
+                        filter.getCategory());
+                return new BooksAndCountDto(books.size(), books);
+            }
+            if (!filter.getName().isEmpty() && !filter.getAuthor().isEmpty()) {
+                books = repository.list("Select e from Book e where lower(e.name) like ?1 and lower(e.author) like ?2",
+                        Sort.by("id").ascending(),
+                        filter.getName(),
+                        filter.getAuthor());
+                return new BooksAndCountDto(books.size(), books);
+            }
+            if (!filter.getName().isEmpty() && !filter.getCategory().isEmpty()) {
+                books = repository.list(
+                        "Select e from Book e join e.categories c where lower(e.name) like ?1 and lower(c.name) like ?2",
+                        Sort.by("e.id").ascending(),
+                        filter.getName(),
+                        filter.getCategory());
+                return new BooksAndCountDto(books.size(), books);
+            }
+            if (!filter.getAuthor().isEmpty() && !filter.getCategory().isEmpty()) {
+                books = repository.list(
+                        "Select e from Book e join e.categories c where lower(e.author) like ?1 and lower(c.name) like ?2",
+                        Sort.by("e.id").ascending(),
+                        filter.getAuthor(),
+                        filter.getCategory());
+                return new BooksAndCountDto(books.size(), books);
+            }
+            if (!filter.getName().isEmpty()) {
+                books = repository.list("Select e from Book e where lower(e.name) like ?1",
+                        Sort.by("id").ascending(),
+                        filter.getName());
+                return new BooksAndCountDto(books.size(), books);
+            }
+            if (!filter.getAuthor().isEmpty()) {
+                books = repository.list("Select e from Book e where lower(e.author) like ?1",
+                        Sort.by("id").ascending(),
+                        filter.getAuthor());
+                return new BooksAndCountDto(books.size(), books);
+            }
+            if (!filter.getCategory().isEmpty()) {
+                books = repository.list("Select e from Book e join e.categories c where lower(c.name) like ?1",
+                        Sort.by("e.id").ascending(),
+                        filter.getCategory());
+                return new BooksAndCountDto(books.size(), books);
+            }
+        }
+        /*BookFilter filter = objectMapper.convertValue(request.getFilter(), BookFilter.class);
         List<Book> books;
         if (!filter.getName().isEmpty()) {
             filter.setName("%" + filter.getName().toLowerCase() + "%");
@@ -149,7 +231,8 @@ public class BookPersistenceService {
         if (!filter.getName().isEmpty() && !filter.getAuthor().isEmpty() && !filter.getCategory().isEmpty()) {
             books = repository.list(
                     "Select e from Book e join e.categories c where lower(e.name) like ?1 and lower(e.author) like ?2 and lower(c.name) like ?3",
-                    Sort.by("e.id").ascending(),
+                    Sort.by("e." + request.getSortable().getColumn()).direction(
+                            request.getSortable().isAscending() ? Direction.Ascending : Direction.Descending),
                     filter.getName(),
                     filter.getAuthor(),
                     filter.getCategory());
@@ -195,8 +278,7 @@ public class BookPersistenceService {
                     Sort.by("e.id").ascending(),
                     filter.getCategory());
             return new BooksAndCountDto(books.size(), books);
-        }
-        books = repository.listAll(Sort.by("id").ascending());
-        return new BooksAndCountDto(books.size(), books);
+        }*/
+        return null;
     }
 }

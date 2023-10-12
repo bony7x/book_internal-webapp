@@ -7,6 +7,7 @@ import com.example.book.controller.dto.CreateBookDto;
 import com.example.book.controller.dto.SendBorrowingsDto;
 import com.example.book.controller.dto.SendCategoriesDto;
 import com.example.book.domain.entity.Book;
+import com.example.book.domain.entity.BookFilter;
 import com.example.borrowing.domain.entity.Borrowing;
 import com.example.bookCategory.domain.entity.BookCategory;
 import com.example.request.ExtendedRequest;
@@ -61,4 +62,5 @@ public abstract class BookMapper {
         dto.setBooks(list);
         return dto;
     }
+
 }

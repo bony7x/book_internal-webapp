@@ -124,10 +124,10 @@ public class BorrowingPersistenceService {
         log.debug("deleteBorrowing: {}", id);
 
         Borrowing borrowing = getBorrowingById(id);
+        borrowing.getBook().setCount(borrowing.getBook().getCount() + 1);
         if (borrowing.getBook().getCount() == 1) {
             borrowing.getBook().setStatus(BookStatus.AVAILABLE);
         }
-        borrowing.getBook().setCount(borrowing.getBook().getCount() + 1);
         repository.delete(borrowing);
     }
 
@@ -180,18 +180,18 @@ public class BorrowingPersistenceService {
             );
             return new BorrowingsAndCountDto(borrowings.size(), borrowings);
         }
-        if(!filter.getEmail().isEmpty()){
+        if (!filter.getEmail().isEmpty()) {
             borrowings = repository.list("Select e from Borrowing e where lower(e.customer.email) like ?1",
                     Sort.by("id").ascending(),
                     filter.getEmail()
-                    );
+            );
             return new BorrowingsAndCountDto(borrowings.size(), borrowings);
         }
-        if(filter.getDate() != null){
+        if (filter.getDate() != null) {
             borrowings = repository.list("Select e from Borrowing e where e.dateOfBorrowing = ?1",
                     Sort.by("id").ascending(),
                     filter.getDate()
-                    );
+            );
             return new BorrowingsAndCountDto(borrowings.size(), borrowings);
         }
         borrowings = repository.listAll(Sort.by("id").ascending());
