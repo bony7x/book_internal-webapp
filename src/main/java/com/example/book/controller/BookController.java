@@ -73,21 +73,6 @@ public class BookController {
         return Response.status(200).entity(response).build();
     }
 
-/*    @POST
-    @Path("/books/filter")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response filterBooks(BookFilter filter) {
-        log.debug("filterBooks: {}", filter);
-
-        BooksAndCountDto booksAndCountDto = persistenceService.filterBooks(filter);
-        List<BookDto> dtos = mapper.map(booksAndCountDto.getBooks());
-        ExtendedRequest er = new ExtendedRequest();
-        er.setSortable(new Sortable("id",true));
-        er.setPageable(new Pageable(1, booksAndCountDto.getTotalCount()));
-        BookResponseDto responseDto = mapper.mapToResponse(dtos,er, booksAndCountDto.getTotalCount());
-        return Response.status(200).entity(responseDto).build();
-    }*/
 
     @GET
     @Path("/books")

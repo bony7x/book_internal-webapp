@@ -84,22 +84,6 @@ public class BorrowingController {
         return Response.status(200).entity(response).build();
     }
 
-    @POST
-    @Path("/borrowings/filter")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response filterBorrowings(BorrowingFilter filter) {
-        log.debug("borrowingFilter: {}", filter);
-
-        BorrowingsAndCountDto borrowingsAndCountDto = persistenceService.filterBorrowings(filter);
-        List<BorrowingDto> dtos = mapper.mapToListDto(borrowingsAndCountDto.getBorrowings());
-        ExtendedRequest er = new ExtendedRequest();
-        er.setSortable(new Sortable("id",true));
-        er.setPageable(new Pageable(1, borrowingsAndCountDto.getTotalCount()));
-        BorrowingResponseDto responseDto = mapper.mapToResponse(dtos,er, borrowingsAndCountDto.getTotalCount());
-        return Response.status(200).entity(responseDto).build();
-    }
-
     @GET
     @Path("/borrowings")
     @Produces(MediaType.APPLICATION_JSON)

@@ -75,10 +75,10 @@ public class CustomerController {
     @Path("/customers/filter")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response filterCustomers(CustomerFilter filter) {
-        log.debug("filterCustomers: {}", filter);
+    public Response filterCustomers(ExtendedRequest request) {
+        log.debug("filterCustomers: {}", request);
 
-        CustomerAndCountDto customerAndCountDto = persistenceService.filterCustomers(filter);
+        CustomerAndCountDto customerAndCountDto = persistenceService.filterCustomers(request);
         List<CustomerDto> dtos = mapper.map(customerAndCountDto.getCustomers());
         ExtendedRequest er = new ExtendedRequest();
         er.setSortable(new Sortable("id",true));

@@ -1,21 +1,14 @@
 package com.example.bookCategory.controller;
 
-import com.example.book.controller.dto.BookDto;
-import com.example.book.controller.dto.BookResponseDto;
-import com.example.book.controller.dto.BooksAndCountDto;
-import com.example.book.domain.entity.BookFilter;
 import com.example.bookCategory.controller.dto.BookCategoriesAndCountDto;
 import com.example.bookCategory.controller.dto.BookCategoryDto;
 import com.example.bookCategory.controller.dto.BookCategoryResponseDto;
 import com.example.bookCategory.controller.dto.CreateBookCategoryDto;
 import com.example.bookCategory.controller.mapper.BookCategoryMapper;
 import com.example.bookCategory.domain.entity.BookCategory;
-import com.example.bookCategory.domain.entity.BookCategoryFilter;
 import com.example.bookCategory.domain.service.BookCategoryPersistenceService;
 import com.example.bookCategory.exception.BookCategoryNotFoundException;
 import com.example.request.ExtendedRequest;
-import com.example.request.Pageable;
-import com.example.request.Sortable;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -52,16 +45,20 @@ public class BookCategoryController {
     public Response createBookCategory(@Valid CreateBookCategoryDto dto) {
         log.debug("createBookCategory: {}", dto);
 
-        BookCategory bookCategory = persistenceService.persist(mapper.map(dto));
-        BookCategoryDto responseDto = mapper.map(bookCategory);
-        return Response.status(201).entity(responseDto).build();
+        try {
+            BookCategory bookCategory = persistenceService.persist(mapper.map(dto));
+            BookCategoryDto responseDto = mapper.map(bookCategory);
+            return Response.status(201).entity(responseDto).build();
+        } catch (Exception e) {
+            return Response.status(409).entity(e.getMessage()).build();
+        }
     }
 
     @POST
     @Path("/bookCategories/all")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response getAllBookCategories(ExtendedRequest request){
+    public Response getAllBookCategories(ExtendedRequest request) {
         log.debug("getAllBookCategories: {}", request);
 
         BookCategoriesAndCountDto bookCategories = persistenceService.getAll(request);
@@ -70,29 +67,13 @@ public class BookCategoryController {
         return Response.status(200).entity(response).build();
     }
 
-    @POST
-    @Path("/bookCategories/filter")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response filterBookCategories(BookCategoryFilter filter) {
-        log.debug("filterBookCategories: {}", filter);
-
-        BookCategoriesAndCountDto bookCategoriesAndCountDto = persistenceService.filterBookCategories(filter);
-        List<BookCategoryDto> dtos = mapper.map(bookCategoriesAndCountDto.getBookCategories());
-        ExtendedRequest er = new ExtendedRequest();
-        er.setSortable(new Sortable("id",true));
-        er.setPageable(new Pageable(1, bookCategoriesAndCountDto.getTotalCount()));
-        BookCategoryResponseDto responseDto = mapper.mapToResponse(dtos,er, bookCategoriesAndCountDto.getTotalCount());
-        return Response.status(200).entity(responseDto).build();
-    }
-
     @GET
     @Path("/bookCategories")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getBookCategories(@QueryParam("name") String name) {
         log.debug("getBookCategories: {}", name);
 
-        if(name!= null){
+        if (name != null) {
             List<BookCategory> books = persistenceService.getAllByName(name);
             List<BookCategoryDto> dtos = mapper.map(books);
             return Response.status(200).entity(dtos).build();
