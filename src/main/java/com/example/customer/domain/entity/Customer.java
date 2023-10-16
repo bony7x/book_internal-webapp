@@ -1,5 +1,6 @@
 package com.example.customer.domain.entity;
 
+import com.example.auth.domain.entity.User;
 import com.example.borrowing.domain.entity.Borrowing;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -8,6 +9,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -35,6 +37,9 @@ public class Customer {
 
     @Column(name = "email")
     private String email;
+
+    @Column(name = "address")
+    private String address;
 
     @OneToMany(fetch = FetchType.EAGER,mappedBy = "customer")
 /*    @JoinTable(

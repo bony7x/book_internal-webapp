@@ -28,13 +28,13 @@ public class AuthenticationService {
     public User register(User login) throws UserConflictException {
         log.debug("register: {}", login);
 
-        if(login.getName().isEmpty() || login.getPassword().isEmpty()){
-            throw new UserConflictException("Username and password can't be empty!");
+        if(login.getName().isEmpty() || login.getPassword().isEmpty() || login.getEmail().isEmpty()){
+            throw new UserConflictException("Username, email and password can't be empty!");
         }
         User log = decode(login);
         Optional<User> logged = service.getLogin(log);
         if (logged.isPresent()) {
-            throw new UserConflictException("User with the name \"" + login.getName() + "\" already exists!");
+            throw new UserConflictException("User with chosen username or email already exists!");
         } else {
             log.setRole(Roles.USER);
             return service.persist(log);
@@ -56,7 +56,7 @@ public class AuthenticationService {
                 throw new UserConflictException("Wrong password!");
             }
         }
-        String encodedRole = encoder.encodeToString(("[" + exists.get().getRole().toString()+ "]").getBytes());
+        String encodedRole;
         encodedRole = "[" + encoder.encodeToString(exists.get().getRole().toString().getBytes()) + "]";
         authString = authString + encodedRole;
         return authString;
@@ -66,10 +66,12 @@ public class AuthenticationService {
         log.debug("decode: {}", login);
 
         Decoder decoder = Base64.getDecoder();
-        byte[] nameBytes = (decoder.decode(login.getName()));
-        byte[] passwordBytes = (decoder.decode(login.getPassword()));
+        byte[] nameBytes = decoder.decode(login.getName());
+        byte[] passwordBytes = decoder.decode(login.getPassword());
+        byte[] emailBytes = decoder.decode(login.getEmail());
         login.setName(new String(nameBytes));
         login.setPassword(new String(passwordBytes));
+        login.setEmail(new String(emailBytes));
         return login;
     }
 }
