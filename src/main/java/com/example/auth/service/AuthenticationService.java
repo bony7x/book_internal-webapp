@@ -3,6 +3,7 @@ package com.example.auth.service;
 import com.example.auth.domain.entity.Roles;
 import com.example.auth.domain.entity.User;
 import com.example.auth.domain.service.AuthenticationPersistenceService;
+import com.example.auth.domain.service.UserPersistenceService;
 import com.example.auth.exception.UserConflictException;
 import com.example.auth.exception.UserNotFoundException;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -19,7 +20,10 @@ import lombok.extern.slf4j.Slf4j;
 public class AuthenticationService {
 
     @Inject
-    AuthenticationPersistenceService service;
+    AuthenticationPersistenceService authenticationPersistenceService;
+
+    @Inject
+    UserPersistenceService userPersistenceService;
 
     Decoder decoder = Base64.getDecoder();
     Encoder encoder = Base64.getEncoder();
@@ -32,12 +36,12 @@ public class AuthenticationService {
             throw new UserConflictException("Username, email and password can't be empty!");
         }
         User log = decode(login);
-        Optional<User> logged = service.getLogin(log);
+        Optional<User> logged = authenticationPersistenceService.getLogin(log);
         if (logged.isPresent()) {
             throw new UserConflictException("User with chosen username or email already exists!");
         } else {
             log.setRole(Roles.USER);
-            return service.persist(log);
+            return userPersistenceService.persist(log);
         }
     }
 
@@ -48,7 +52,7 @@ public class AuthenticationService {
         authString = authString.replace("Basic ","");
         String decoded = new String(decoder.decode(authString));
         String[] split = decoded.split(":");
-        Optional<User> exists = service.getLogin(new User(split[0],split[1]));
+        Optional<User> exists = authenticationPersistenceService.getLogin(new User(split[0],split[1]));
         if (exists.isEmpty()) {
             throw new UserNotFoundException("User with the name \"" + split[0] + "\" doesn't exist");
         } else {

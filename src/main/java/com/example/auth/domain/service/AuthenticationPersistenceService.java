@@ -3,15 +3,16 @@ package com.example.auth.domain.service;
 import com.example.auth.domain.entity.Roles;
 import com.example.auth.domain.entity.User;
 import com.example.auth.domain.repository.UserRepository;
+import com.example.auth.exception.UserConflictException;
 import com.example.auth.exception.UserNotFoundException;
 import com.example.customer.domain.entity.Customer;
-import com.example.customer.domain.repository.CustomerRepository;
 import com.example.customer.domain.service.CustomerPersistenceService;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import java.util.Base64;
 import java.util.Base64.Decoder;
+import java.util.Base64.Encoder;
 import java.util.List;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
@@ -28,12 +29,14 @@ public class AuthenticationPersistenceService {
 
     Decoder decoder = Base64.getDecoder();
 
-    public User persist(User login) {
+    Encoder encoder = Base64.getEncoder();
+
+/*    public User persist(User login) {
         log.debug("persist: {}", login);
 
         repository.persist(login);
         return login;
-    }
+    }*/
 
     public Optional<User> getLogin(User login) {
         log.debug("getLogin: {}", login);
@@ -42,13 +45,13 @@ public class AuthenticationPersistenceService {
                 login.getEmail()).stream().findFirst();
     }
 
-    public List<User> getAllUsers() {
+/*    public List<User> getAllUsers() {
         log.debug("getAllUsers");
 
         return repository.findAll().stream().toList();
-    }
+    }*/
 
-    @Transactional
+/*    @Transactional
     public void updateUserRole(User update) throws UserNotFoundException {
         log.debug("updateUserRole: {}", update);
 
@@ -58,33 +61,55 @@ public class AuthenticationPersistenceService {
         }
         user.get().setRole(update.getRole());
         repository.getEntityManager().merge(user.get());
-    }
+    }*/
 
-    public User getCurrentUser(String token){
+/*    public User getCurrentUser(String token) {
         log.debug("getCurrentUser: {}", token);
 
-        token = token.replace("Basic ","");
-        String[] split2= token.split("\\[");
+        token = token.replace("Basic ", "");
+        String[] split2 = token.split("\\[");
         String token2 = split2[0];
         String decoded = new String(decoder.decode(token2));
         String[] split = decoded.split(":");
-        Optional<User> exists = getLogin(new User(split[0],split[1]));
+        Optional<User> exists = getLogin(new User(split[0], split[1]));
         return exists.orElse(null);
-    }
+    }*/
+
+/*    public User getUserByCustomerId(Integer id) {
+        log.debug("getUser: {}", id);
+
+        Optional<User> user = repository.list("Select e from User e where e.customer.id =?1", id).stream().findFirst();
+        return user.orElse(null);
+    }*/
 
     @Transactional
-    public void registerUserAsCustomer(User userFromDto, String firstName, String lastName, String address){
-        log.debug("registerUserAsCustomer: {} {} {} {}", userFromDto,firstName,lastName,address);
+    public String registerUserAsCustomer(User userFromDto, String firstName, String lastName, String address)
+            throws UserConflictException {
+        log.debug("registerUserAsCustomer: {} {} {} {}", userFromDto, firstName, lastName, address);
 
         User user = repository.findById(Long.valueOf(userFromDto.getId()));
-        Customer customer = new Customer();
-        customer.setEmail(user.getEmail());
-        customer.setFirstName(firstName);
-        customer.setLastName(lastName);
-        customer.setAddress(address);
-        Customer persisted = customerPersistenceService.persist(customer);
-        user.setCustomer(persisted);
-        user.setRole(userFromDto.getRole());
-        repository.getEntityManager().merge(user);
+        if (user.getCustomer() == null) {
+            Customer customer = new Customer();
+            customer.setEmail(user.getEmail());
+            customer.setFirstName(firstName);
+            customer.setLastName(lastName);
+            customer.setAddress(address);
+            Customer persisted = customerPersistenceService.persist(customer);
+            user.setCustomer(persisted);
+            user.setRole(Roles.CUSTOMER);
+            user = repository.getEntityManager().merge(user);
+            return sendAuthString(user);
+        } else {
+            throw new UserConflictException("User is already a registered customer!");
+        }
+    }
+
+    private String sendAuthString(User user) {
+        log.debug("sendAuthString: {}", user);
+
+        String authString = user.getCustomer().getFirstName() + ":" + user.getCustomer().getLastName();
+        authString = encoder.encodeToString(authString.getBytes());
+        authString = authString + "[" + encoder.encodeToString(user.getRole().toString().getBytes()) + "]";
+        return authString;
     }
 }

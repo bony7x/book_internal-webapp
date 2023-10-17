@@ -7,10 +7,10 @@ import com.example.auth.controller.dto.UserUpdateRoleDto;
 import com.example.auth.controller.mapper.LoginMapper;
 import com.example.auth.domain.entity.User;
 import com.example.auth.domain.service.AuthenticationPersistenceService;
+import com.example.auth.domain.service.UserPersistenceService;
 import com.example.auth.exception.UserConflictException;
 import com.example.auth.exception.UserNotFoundException;
 import com.example.auth.service.AuthenticationService;
-import io.vertx.core.json.JsonObject;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
@@ -25,7 +25,6 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import java.util.List;
-import javax.print.attribute.standard.Media;
 import lombok.extern.slf4j.Slf4j;
 
 @ApplicationScoped
@@ -37,7 +36,10 @@ public class AuthController {
     AuthenticationService service;
 
     @Inject
-    AuthenticationPersistenceService persistenceService;
+    AuthenticationPersistenceService authenticationPersistenceService;
+
+    @Inject
+    UserPersistenceService userPersistenceService;
 
     @Inject
     LoginMapper mapper;
@@ -90,9 +92,18 @@ public class AuthController {
     public Response registerUserAsCustomer(RegisterUserAsCustomerDto request) {
         log.debug("registerUserAsCustomer: {}", request);
 
-        persistenceService.registerUserAsCustomer(request.getUser(), request.getFirstName(), request.getLastName(),
-                request.getAddress());
-        return Response.status(201).build();
+        try {
+            TokenDto tokenDto = new TokenDto(
+                    authenticationPersistenceService.registerUserAsCustomer(request.getUser(), request.getFirstName(),
+                    request.getLastName(),
+                    request.getAddress()));
+            return Response.status(201).entity(tokenDto).build();
+        } catch (Exception e) {
+            if (e.getClass().equals(UserConflictException.class)) {
+                return Response.status(409).entity(e.getMessage()).build();
+            }
+            return Response.status(400).entity(e.getMessage()).build();
+        }
     }
 
     @DELETE
@@ -105,17 +116,17 @@ public class AuthController {
         return Response.status(200).build();
     }
 
-    @GET
+/*    @GET
     @Path("/users")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAllUsers() {
         log.debug("getAllUsers");
 
-        List<UserDto> dtos = mapper.map(this.persistenceService.getAllUsers());
+        List<UserDto> dtos = mapper.map(this.authenticationPersistenceService.getAllUsers());
         return Response.status(200).entity(dtos).build();
-    }
+    }*/
 
-    @POST
+/*    @POST
     @Path("/users/current")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getCurrentUser(String token) {
@@ -123,9 +134,9 @@ public class AuthController {
 
         UserDto dto = mapper.map(persistenceService.getCurrentUser(token));
         return Response.status(200).entity(dto).build();
-    }
+    }*/
 
-    @PUT
+/*    @PUT
     @Path("/users")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
@@ -134,7 +145,7 @@ public class AuthController {
 
         try {
             update.setRole(update.getRole().toUpperCase());
-            persistenceService.updateUserRole(mapper.map(update));
+            userPersistenceService.updateUserRole(mapper.map(update));
             return Response.status(200).build();
         } catch (Exception e) {
             if (e.getClass().equals(UserNotFoundException.class)) {
@@ -142,5 +153,5 @@ public class AuthController {
             }
             return Response.status(400).entity(e.getMessage()).build();
         }
-    }
+    }*/
 }

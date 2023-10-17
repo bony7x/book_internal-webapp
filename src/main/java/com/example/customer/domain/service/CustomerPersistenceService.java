@@ -1,5 +1,9 @@
 package com.example.customer.domain.service;
 
+import com.example.auth.domain.entity.Roles;
+import com.example.auth.domain.entity.User;
+import com.example.auth.domain.service.AuthenticationPersistenceService;
+import com.example.auth.domain.service.UserPersistenceService;
 import com.example.borrowing.exception.BorrowingConflictException;
 import com.example.customer.controller.dto.CustomerAndCountDto;
 import com.example.customer.domain.entity.Customer;
@@ -24,6 +28,12 @@ public class CustomerPersistenceService {
 
     @Inject
     CustomerRepository repository;
+
+    @Inject
+    AuthenticationPersistenceService authenticationPersistenceService;
+
+    @Inject
+    UserPersistenceService userPersistenceService;
 
     @Transactional
     public Customer persist(Customer customer) {
@@ -112,6 +122,12 @@ public class CustomerPersistenceService {
         Customer customer = getCustomerById(id);
         if (!customer.getBorrowings().isEmpty()) {
             throw new BorrowingConflictException("Zakaznik, ktory ma vypozicane knihy nemoze byt odstraneny!");
+        }
+        User user = userPersistenceService.getUserByCustomerId(customer.getId());
+        if (user != null) {
+            user.setCustomer(null);
+            user.setRole(Roles.USER);
+            repository.getEntityManager().merge(user);
         }
         repository.delete(customer);
     }
