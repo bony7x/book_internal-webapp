@@ -1,6 +1,6 @@
 package com.example.customer.controller.dto;
 
-import com.example.book.controller.dto.SendBorrowingsDto;
+import com.example.book.controller.dto.BookBorrowingDto;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,5 +19,7 @@ public class CustomerDto {
 
     private String email;
 
-    private List<SendBorrowingsDto> borrowings;
+    private String address;
+
+    private List<BookBorrowingDto> borrowings;
 }

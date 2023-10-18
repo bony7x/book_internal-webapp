@@ -1,13 +1,12 @@
 package com.example.book.controller.mapper;
 
+import com.example.book.controller.dto.BookCategoriesOnlyDto;
 import com.example.book.controller.dto.BookDto;
 import com.example.book.controller.dto.BookResponseDto;
 import com.example.book.controller.dto.BooksAndCountDto;
 import com.example.book.controller.dto.CreateBookDto;
-import com.example.book.controller.dto.SendBorrowingsDto;
-import com.example.book.controller.dto.SendCategoriesDto;
+import com.example.book.controller.dto.BookBorrowingDto;
 import com.example.book.domain.entity.Book;
-import com.example.book.domain.entity.BookFilter;
 import com.example.borrowing.domain.entity.Borrowing;
 import com.example.bookCategory.domain.entity.BookCategory;
 import com.example.request.ExtendedRequest;
@@ -51,9 +50,9 @@ public abstract class BookMapper {
         return ints;
     }
 
-    public abstract List<SendBorrowingsDto> mapToSend(List<BookDto> list);
+    public abstract List<BookBorrowingDto> mapToSend(List<BookDto> list);
 
-    public abstract List<SendCategoriesDto> mapToSendCat(List<BookDto> list);
+    public abstract List<BookCategoriesOnlyDto> mapToSendCat(List<BookDto> list);
 
     public abstract List<BookDto> map(List<Book> books);
 

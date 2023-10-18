@@ -1,6 +1,7 @@
 package com.example.auth.controller.dto;
 
-import jakarta.persistence.criteria.CriteriaBuilder.In;
+import com.example.auth.domain.entity.User;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,9 +9,9 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserUpdateDto {
+public class UserAndCountDto {
 
-    private String name;
+    private Integer totalCount;
 
-    private String email;
+    private List<User> users;
 }

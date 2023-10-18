@@ -17,9 +17,9 @@ public class BookDto {
 
     private String author;
 
-    private List<SendCategoriesDto> categories;
+    private List<BookCategoriesOnlyDto> categories;
 
-    private List<SendBorrowingsDto> borrowings;
+    private List<BookBorrowingDto> borrowings;
 
     private Integer count;
 

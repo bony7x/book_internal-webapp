@@ -1,16 +1,14 @@
-package com.example.auth.controller.dto;
+package com.example.auth.domain.entity;
 
-import jakarta.persistence.criteria.CriteriaBuilder.In;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class UserUpdateDto {
+@NoArgsConstructor
+public class UserFilter {
 
     private String name;
-
     private String email;
 }

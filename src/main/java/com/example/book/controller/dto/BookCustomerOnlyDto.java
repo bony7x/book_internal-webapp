@@ -7,9 +7,15 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class SendCategoriesDto {
+public class BookCustomerOnlyDto {
 
     private Integer id;
 
-    private String name;
+    private String firstName;
+
+    private String lastName;
+
+    private String email;
+
+    private String address;
 }

@@ -1,6 +1,7 @@
 package com.example.borrowing.controller.mapper;
 
 import com.example.borrowing.controller.dto.BorrowingDto;
+import com.example.borrowing.controller.dto.BorrowingOnlyDto;
 import com.example.borrowing.controller.dto.BorrowingResponseDto;
 import com.example.borrowing.controller.dto.BorrowingsDto;
 import com.example.borrowing.controller.dto.CreateBorrowingDto;
@@ -18,6 +19,8 @@ public abstract class BorrowingMapper {
     public abstract Borrowing map(CreateBorrowingDto dto);
 
     public abstract CreateBorrowingDto map(Borrowing borrowing);
+
+    public abstract BorrowingOnlyDto mapToOnlyDto(Borrowing borrowing);
 
     public BorrowingResponseDto mapToResponse(List<BorrowingDto> borrowings, ExtendedRequest extendedRequest, Integer size){
         BorrowingResponseDto borrowingResponse = new BorrowingResponseDto();

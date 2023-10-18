@@ -1,15 +1,14 @@
 package com.example.customer.controller.dto;
 
-import com.example.borrowing.controller.dto.BorrowingOnlyDto;
-import java.util.List;
-import lombok.AllArgsConstructor;
+import io.quarkus.arc.All;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-public class SendCustomerDto {
+@All
+public class CustomerOnlyDto {
+
     private Integer id;
 
     private String firstName;
@@ -18,5 +17,5 @@ public class SendCustomerDto {
 
     private String email;
 
-    private List<BorrowingOnlyDto> borrowings;
+    private String address;
 }

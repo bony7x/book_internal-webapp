@@ -15,6 +15,7 @@ import com.example.borrowing.domain.entity.BorrowingFilter;
 import com.example.borrowing.domain.service.BorrowingPersistenceService;
 import com.example.borrowing.exception.BorrowingConflictException;
 import com.example.borrowing.exception.BorrowingNotFoundException;
+import com.example.customer.controller.dto.CustomerDto;
 import com.example.customer.exception.CustomerNotFoundException;
 import com.example.request.ExtendedRequest;
 import com.example.request.Pageable;
@@ -51,7 +52,7 @@ public class BorrowingController {
     @Path("/borrowings")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response createBorrowing(@Valid CreateBorrowingDto dto) {
+    public Response createBorrowing(CreateBorrowingDto dto) {
         log.debug("createBorrowing: {}", dto);
 
         try {
@@ -68,6 +69,18 @@ public class BorrowingController {
             }
             return Response.status(400).entity(e.getMessage()).build();
         }
+    }
+
+    @POST
+    @Path("/borrowings/customer")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getCustomersBorrowings(CustomerDto dto){
+        log.debug("getCustomersBorrowings: {}", dto);
+
+        List<Borrowing> borrowings = persistenceService.getBorrowingsByCustomerId(dto.getId());
+        List<BorrowingDto> dtos = mapper.mapToListDto(borrowings);
+        return Response.status(200).entity(dtos).build();
     }
 
     @POST

@@ -5,8 +5,8 @@ import com.example.book.domain.entity.Book;
 import com.example.bookCategory.controller.dto.BookCategoriesDto;
 import com.example.bookCategory.controller.dto.BookCategoryDto;
 import com.example.bookCategory.controller.dto.BookCategoryResponseDto;
+import com.example.bookCategory.controller.dto.CategoryBookOnlyDto;
 import com.example.bookCategory.controller.dto.CreateBookCategoryDto;
-import com.example.bookCategory.controller.dto.SendBooksDto;
 import com.example.bookCategory.domain.entity.BookCategory;
 import com.example.request.ExtendedRequest;
 import java.util.List;
@@ -30,7 +30,7 @@ public abstract class BookCategoryMapper {
 
     public abstract List<Integer> mapToInt(List<Book> value);
 
-    public abstract List<SendBooksDto> mapToSend(List<BooksAndCountDto>list);
+    public abstract List<CategoryBookOnlyDto> mapToSend(List<BooksAndCountDto>list);
 
     public  Integer map(Book value){
         Integer inte = value.getId();

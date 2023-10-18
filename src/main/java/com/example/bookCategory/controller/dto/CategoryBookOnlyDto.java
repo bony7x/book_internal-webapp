@@ -1,18 +1,24 @@
 package com.example.bookCategory.controller.dto;
 
-import java.util.List;
+import com.example.book.domain.entity.BookStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class BookCategoryDto {
+@NoArgsConstructor
+public class CategoryBookOnlyDto {
 
     private Integer id;
 
     private String name;
 
-    private List<BookCategoryBookDto> books;
+    private Integer count;
+
+    private BookStatus status;
+
+    private String isbn;
+
+    private String author;
 }

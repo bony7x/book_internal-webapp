@@ -1,13 +1,22 @@
 package com.example.auth.domain.service;
 
+import com.example.auth.controller.dto.UserAndCountDto;
 import com.example.auth.domain.entity.User;
+import com.example.auth.domain.entity.UserFilter;
 import com.example.auth.domain.repository.UserRepository;
+import com.example.auth.exception.UserConflictException;
 import com.example.auth.exception.UserNotFoundException;
 import com.example.customer.domain.entity.Customer;
 import com.example.customer.domain.repository.CustomerRepository;
 import com.example.customer.domain.service.CustomerPersistenceService;
 import com.example.customer.exception.CustomerConflictException;
 import com.example.customer.exception.CustomerNotFoundException;
+import com.example.request.ExtendedRequest;
+import com.example.utils.CalculateIndex.CalculateIndex;
+import com.example.utils.CalculateIndex.Index;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.quarkus.panache.common.Sort;
+import io.quarkus.panache.common.Sort.Direction;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -79,7 +88,28 @@ public class UserPersistenceService {
     public List<User> getAllUsers() {
         log.debug("getAllUsers");
 
-        return repository.findAll().stream().toList();
+        return repository.listAll(Sort.by("id").ascending());
+    }
+
+    public UserAndCountDto getAllUsers(ExtendedRequest request) {
+        log.debug("getAllUsers");
+
+        List<User> sublist;
+        UserAndCountDto filteredUsers;
+        filteredUsers = filterUsers(request);
+        if (filteredUsers == null) {
+            CalculateIndex calculateIndex = new CalculateIndex();
+            List<User> users = request.getSortable().isAscending() ? repository.listAll(
+                    Sort.by(request.getSortable().getColumn()).ascending())
+                    : repository.listAll(Sort.by(request.getSortable().getColumn()).descending());
+            Index indexes = calculateIndex.calculateIndex(request, users.size());
+            sublist = users.subList(indexes.getFromIndex(), indexes.getToIndex());
+            return new UserAndCountDto(users.size(), sublist);
+        }
+        CalculateIndex calculateIndex = new CalculateIndex();
+        Index indexes = calculateIndex.calculateIndex(request, filteredUsers.getUsers().size());
+        sublist = filteredUsers.getUsers().subList(indexes.getFromIndex(), indexes.getToIndex());
+        return new UserAndCountDto(filteredUsers.getUsers().size(), sublist);
     }
 
     public User getUser(Integer id) throws UserNotFoundException {
@@ -110,13 +140,35 @@ public class UserPersistenceService {
         return repository.getEntityManager().merge(user);
     }
 
-    public void deleteUser(User toDelete)
-            throws CustomerConflictException, UserNotFoundException, CustomerNotFoundException {
-        log.debug("deleteUser: {}", toDelete);
+    @Transactional
+    public User updateUserNameEmail(User update, Integer id) throws UserNotFoundException, UserConflictException {
+        log.debug("updateUserNameEmail: {}", update);
 
-        User user = getUser(toDelete.getId());
-        if (toDelete.getCustomer() != null) {
-            Customer customer = customerPersistenceService.getCustomerById(toDelete.getCustomer().getId());
+        String email = "%" + update.getEmail().toLowerCase() + "%";
+        Optional<User> userEmail = repository.list("Select e from User e where lower(e.email) like ?1", email).stream()
+                .findFirst();
+        Optional<Customer> customerEmail = customerRepository.list(
+                "Select e from Customer e where lower(e.email) like ?1", email).stream().findFirst();
+        if (userEmail.isPresent() || customerEmail.isPresent()) {
+            throw new UserConflictException("Email address is already used!");
+        }
+        User user = getUser(id);
+        user.setName(update.getName());
+        user.setEmail(update.getEmail());
+        if (user.getCustomer() != null) {
+            user.getCustomer().setEmail(update.getEmail());
+        }
+        return repository.getEntityManager().merge(user);
+    }
+
+    @Transactional
+    public void deleteUser(Integer id)
+            throws CustomerConflictException, UserNotFoundException, CustomerNotFoundException {
+        log.debug("deleteUser: {}", id);
+
+        User user = getUser(id);
+        if (user.getCustomer() != null) {
+            Customer customer = customerPersistenceService.getCustomerById(user.getCustomer().getId());
             if (customer.getBorrowings().isEmpty()) {
                 customerRepository.delete(customer);
             } else {
@@ -142,5 +194,44 @@ public class UserPersistenceService {
                 .stream()
                 .findFirst();
         return user.isPresent() || customer.isPresent();
+    }
+
+    private UserAndCountDto filterUsers(ExtendedRequest request) {
+        log.debug("filterUsers: {}", request);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        if (request.getFilter() != null) {
+            UserFilter filter = objectMapper.convertValue(request.getFilter(), UserFilter.class);
+            List<User> users;
+            if (filter.getName() != null) {
+                filter.setName("%" + filter.getName() + "%");
+            }
+            if (filter.getEmail() != null) {
+                filter.setEmail("%" + filter.getEmail() + "%");
+            }
+            if (filter.getName() != null && filter.getEmail() != null) {
+                users = repository.list("Select e from User e where lower(e.name) like ?1 and lower(e.email) like ?2",
+                        Sort.by(request.getSortable().getColumn()).direction(
+                                request.getSortable().isAscending() ? Direction.Ascending : Direction.Descending),
+                        filter.getName(),
+                        filter.getEmail());
+                return new UserAndCountDto(users.size(), users);
+            }
+            if (filter.getName() != null) {
+                users = repository.list("Select e from User e where lower(e.name) like ?1",
+                        Sort.by(request.getSortable().getColumn()).direction(
+                                request.getSortable().isAscending() ? Direction.Ascending : Direction.Descending),
+                        filter.getName());
+                return new UserAndCountDto(users.size(), users);
+            }
+            if (filter.getEmail() != null) {
+                users = repository.list("Select e from User e where lower(e.email) like ?1",
+                        Sort.by(request.getSortable().getColumn()).direction(
+                                request.getSortable().isAscending() ? Direction.Ascending : Direction.Descending),
+                        filter.getEmail());
+                return new UserAndCountDto(users.size(), users);
+            }
+        }
+        return null;
     }
 }

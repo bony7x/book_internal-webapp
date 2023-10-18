@@ -1,6 +1,7 @@
 package com.example.auth.controller.dto;
 
-import com.example.customer.controller.dto.SendCustomerDto;
+import com.example.borrowing.controller.dto.BorrowingDto;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,17 +9,15 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserDto {
+public class UserCustomerDto {
 
     private Integer id;
 
-    private String name;
+    private String firstName;
 
-    private String password;
+    private String lastName;
 
     private String email;
 
-    private String role;
-
-    private UserCustomerDto customer;
+    private List<BorrowingDto> borrowings;
 }
