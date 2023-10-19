@@ -178,6 +178,66 @@ public class UserPersistenceService {
         repository.delete(user);
     }
 
+    @Transactional
+    public String updateUserName(String name, String token, String password)
+            throws UserNotFoundException, UserConflictException {
+        log.debug("updateUserName: {}", name);
+
+        User user = getCurrentUser(token);
+        if (user == null) {
+            throw new UserNotFoundException("User not found!");
+        }
+        if (!user.getPassword().equals(new String(decoder.decode(password)))) {
+            throw new UserConflictException("Wrong password!");
+        }
+        String search = "%" + name.toLowerCase() + "%";
+        Optional<User> exists = repository.list("Select e from User e where lower(e.name) like ?1", search).stream().findFirst();
+        if(exists.isPresent()){
+            throw new UserConflictException("Username is already taken!");
+        }
+        user.setName(name);
+        return authenticationPersistenceService.sendAuthString(user);
+    }
+
+    @Transactional
+    public void updateUserEmail(String email, String token, String password)
+            throws UserNotFoundException, UserConflictException {
+        log.debug("updateUserEmail: {}", email);
+
+        User user = getCurrentUser(token);
+        if (user == null) {
+            throw new UserNotFoundException("User not found!");
+        }
+        if (!user.getPassword().equals(new String(decoder.decode(password)))) {
+            throw new UserConflictException("Wrong password!");
+        }
+        String search = "%" + email.toLowerCase() + "%";
+        Optional<User> exists = repository.list("Select e from User e where lower(e.email) like ?1", search).stream().findFirst();
+        Optional<Customer> existsC = customerRepository.list("Select e from Customer e where lower(e.email) like ?1", search).stream().findFirst();
+        if(exists.isPresent() || existsC.isPresent()){
+            throw new UserConflictException("Email is already taken!");
+        }
+        user.setEmail(email);
+        if (user.getCustomer() != null) {
+            user.getCustomer().setEmail(email);
+        }
+    }
+
+    @Transactional
+    public void updateUserAddress(String address, String token, String password)
+            throws UserNotFoundException, UserConflictException {
+        log.debug("updateUserAddress: {}", address);
+
+        User user = getCurrentUser(token);
+        if (user == null) {
+            throw new UserNotFoundException("User not found!");
+        }
+        if (!user.getPassword().equals(new String(decoder.decode(password)))) {
+            throw new UserConflictException("Wrong password!");
+        }
+        user.getCustomer().setAddress(address);
+    }
+
 
     private boolean nameExists(String name) {
         log.debug("nameExists: {}", name);
@@ -200,16 +260,16 @@ public class UserPersistenceService {
         log.debug("filterUsers: {}", request);
 
         ObjectMapper objectMapper = new ObjectMapper();
-        if (request.getFilter() != null) {
+        if (!request.getFilter().isEmpty()) {
             UserFilter filter = objectMapper.convertValue(request.getFilter(), UserFilter.class);
             List<User> users;
-            if (filter.getName() != null) {
+            if (!filter.getName().isEmpty()) {
                 filter.setName("%" + filter.getName() + "%");
             }
-            if (filter.getEmail() != null) {
+            if (!filter.getEmail().isEmpty()) {
                 filter.setEmail("%" + filter.getEmail() + "%");
             }
-            if (filter.getName() != null && filter.getEmail() != null) {
+            if (!filter.getName().isEmpty() && !filter.getEmail().isEmpty()) {
                 users = repository.list("Select e from User e where lower(e.name) like ?1 and lower(e.email) like ?2",
                         Sort.by(request.getSortable().getColumn()).direction(
                                 request.getSortable().isAscending() ? Direction.Ascending : Direction.Descending),
@@ -217,14 +277,14 @@ public class UserPersistenceService {
                         filter.getEmail());
                 return new UserAndCountDto(users.size(), users);
             }
-            if (filter.getName() != null) {
+            if (!filter.getName().isEmpty()) {
                 users = repository.list("Select e from User e where lower(e.name) like ?1",
                         Sort.by(request.getSortable().getColumn()).direction(
                                 request.getSortable().isAscending() ? Direction.Ascending : Direction.Descending),
                         filter.getName());
                 return new UserAndCountDto(users.size(), users);
             }
-            if (filter.getEmail() != null) {
+            if (!filter.getEmail().isEmpty()) {
                 users = repository.list("Select e from User e where lower(e.email) like ?1",
                         Sort.by(request.getSortable().getColumn()).direction(
                                 request.getSortable().isAscending() ? Direction.Ascending : Direction.Descending),

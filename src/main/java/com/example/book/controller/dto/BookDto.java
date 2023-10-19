@@ -26,4 +26,6 @@ public class BookDto {
     private BookStatus status;
 
     private String isbn;
+
+    private Integer borrowingCount;
 }

@@ -32,4 +32,6 @@ public class BookCategory {
     @ManyToMany(mappedBy = "categories",fetch = FetchType.EAGER)
     @ToString.Exclude
     private List<Book> books;
+
+    private Integer bookCount;
 }

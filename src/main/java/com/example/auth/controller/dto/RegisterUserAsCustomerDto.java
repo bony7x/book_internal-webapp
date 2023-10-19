@@ -17,4 +17,6 @@ public class RegisterUserAsCustomerDto {
     private String address;
 
     private User user;
+
+    private String email;
 }

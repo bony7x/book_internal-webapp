@@ -47,6 +47,7 @@ public class BookCategoryPersistenceService {
         if (!exists.isEmpty()) {
             throw new BookCategoryConflictException("Book category with that name already exists!");
         }
+        bookCategory.setBookCount(0);
         repository.persist(bookCategory);
         return bookCategory;
     }
@@ -125,10 +126,10 @@ public class BookCategoryPersistenceService {
         log.debug("filterBookCategories: {}", request);
 
         ObjectMapper objectMapper = new ObjectMapper();
-        if (request.getFilter() != null) {
+        if (!request.getFilter().isEmpty()) {
             BookCategoryFilter filter = objectMapper.convertValue(request.getFilter(), BookCategoryFilter.class);
             List<BookCategory> categories;
-            if (filter.getCategory() != null) {
+            if (!filter.getCategory().isEmpty()) {
                 filter.setCategory("%" + filter.getCategory().toLowerCase() + "%");
                 categories = repository.list("Select e from BookCategory e where lower(e.name) like ?1",
                         Sort.by(request.getSortable().getColumn()).direction(

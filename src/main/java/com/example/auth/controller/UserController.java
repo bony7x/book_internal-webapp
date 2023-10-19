@@ -1,10 +1,14 @@
 package com.example.auth.controller;
 
+import com.example.auth.controller.dto.TokenDto;
 import com.example.auth.controller.dto.UserAndCountDto;
 import com.example.auth.controller.dto.UserDto;
 import com.example.auth.controller.dto.UserResponseDto;
+import com.example.auth.controller.dto.UserUpdateAddressDto;
 import com.example.auth.controller.dto.UserUpdateDto;
+import com.example.auth.controller.dto.UserUpdateEmailDto;
 import com.example.auth.controller.dto.UserUpdateRoleDto;
+import com.example.auth.controller.dto.UserUpdateUsernameDto;
 import com.example.auth.controller.mapper.LoginMapper;
 import com.example.auth.domain.entity.User;
 import com.example.auth.domain.service.UserPersistenceService;
@@ -164,6 +168,73 @@ public class UserController {
         } catch (Exception e) {
             if (e.getClass().equals(UserNotFoundException.class)) {
                 return Response.status(404).entity(e.getMessage()).build();
+            }
+            return Response.status(400).entity(e.getMessage()).build();
+        }
+    }
+
+    @PUT
+    @Path("/users/name")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response updateUserName(UserUpdateUsernameDto update) {
+        log.debug("updateUserName: {}", update);
+
+        try {
+            String token = userPersistenceService.updateUserName(update.getName(), update.getToken(),
+                    update.getPassword());
+            TokenDto dto = new TokenDto(token);
+            return Response.status(200).entity(dto).build();
+        } catch (Exception e) {
+            if (e.getClass().equals(UserNotFoundException.class)) {
+                return Response.status(404).entity(e.getMessage()).build();
+            }
+            if (e.getClass().equals(UserConflictException.class)) {
+                return Response.status(409).entity(e.getMessage()).build();
+            }
+            return Response.status(400).entity(e.getMessage()).build();
+        }
+    }
+
+    @PUT
+    @Path("/users/email")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response updateUserEmail(UserUpdateEmailDto update) {
+        log.debug("updateUserEmail: {}", update);
+
+        try {
+            userPersistenceService.updateUserEmail(update.getEmail(), update.getToken(),
+                    update.getPassword());
+            return Response.status(200).build();
+        } catch (Exception e) {
+            if (e.getClass().equals(UserNotFoundException.class)) {
+                return Response.status(404).entity(e.getMessage()).build();
+            }
+            if (e.getClass().equals(UserConflictException.class)) {
+                return Response.status(409).entity(e.getMessage()).build();
+            }
+            return Response.status(400).entity(e.getMessage()).build();
+        }
+    }
+
+    @PUT
+    @Path("/users/address")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response updateUserAddress(UserUpdateAddressDto update) {
+        log.debug("updateUserName: {}", update);
+
+        try {
+            userPersistenceService.updateUserAddress(update.getAddress(), update.getToken(),
+                    update.getPassword());
+            return Response.status(200).build();
+        } catch (Exception e) {
+            if (e.getClass().equals(UserNotFoundException.class)) {
+                return Response.status(404).entity(e.getMessage()).build();
+            }
+            if (e.getClass().equals(UserConflictException.class)) {
+                return Response.status(409).entity(e.getMessage()).build();
             }
             return Response.status(400).entity(e.getMessage()).build();
         }

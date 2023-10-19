@@ -4,16 +4,15 @@ import com.example.auth.domain.entity.Roles;
 import com.example.auth.domain.entity.User;
 import com.example.auth.domain.repository.UserRepository;
 import com.example.auth.exception.UserConflictException;
-import com.example.auth.exception.UserNotFoundException;
 import com.example.customer.domain.entity.Customer;
 import com.example.customer.domain.service.CustomerPersistenceService;
+import com.example.customer.exception.CustomerConflictException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import java.util.Base64;
 import java.util.Base64.Decoder;
 import java.util.Base64.Encoder;
-import java.util.List;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 
@@ -83,18 +82,19 @@ public class AuthenticationPersistenceService {
     }*/
 
     @Transactional
-    public String registerUserAsCustomer(User userFromDto, String firstName, String lastName, String address)
-            throws UserConflictException {
+    public String registerUserAsCustomer(User userFromDto, String firstName, String lastName, String address, String email)
+            throws UserConflictException, CustomerConflictException {
         log.debug("registerUserAsCustomer: {} {} {} {}", userFromDto, firstName, lastName, address);
 
         User user = repository.findById(Long.valueOf(userFromDto.getId()));
         if (user.getCustomer() == null) {
             Customer customer = new Customer();
-            customer.setEmail(user.getEmail());
+            customer.setEmail(email);
             customer.setFirstName(firstName);
             customer.setLastName(lastName);
             customer.setAddress(address);
             Customer persisted = customerPersistenceService.persist(customer);
+            user.setEmail(email);
             user.setCustomer(persisted);
             user.setRole(Roles.CUSTOMER);
             user = repository.getEntityManager().merge(user);
@@ -104,10 +104,10 @@ public class AuthenticationPersistenceService {
         }
     }
 
-    private String sendAuthString(User user) {
+    public String sendAuthString(User user) {
         log.debug("sendAuthString: {}", user);
 
-        String authString = user.getCustomer().getFirstName() + ":" + user.getCustomer().getLastName();
+        String authString = user.getName()+ ":" + user.getPassword();
         authString = encoder.encodeToString(authString.getBytes());
         authString = authString + "[" + encoder.encodeToString(user.getRole().toString().getBytes()) + "]";
         return authString;

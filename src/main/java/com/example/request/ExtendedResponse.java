@@ -9,9 +9,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ExtendedResponse {
 
-    Integer pageNumber;
+    private Integer pageNumber;
 
-    Integer pageSize;
+    private Integer pageSize;
 
-    Integer totalCount;
+    private Integer totalCount;
 }

@@ -3,7 +3,6 @@ package com.example.auth.controller;
 import com.example.auth.controller.dto.RegisterUserAsCustomerDto;
 import com.example.auth.controller.dto.TokenDto;
 import com.example.auth.controller.dto.UserDto;
-import com.example.auth.controller.dto.UserUpdateRoleDto;
 import com.example.auth.controller.mapper.LoginMapper;
 import com.example.auth.domain.entity.User;
 import com.example.auth.domain.service.AuthenticationPersistenceService;
@@ -15,16 +14,13 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
-import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
-import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 
 @ApplicationScoped
@@ -95,8 +91,9 @@ public class AuthController {
         try {
             TokenDto tokenDto = new TokenDto(
                     authenticationPersistenceService.registerUserAsCustomer(request.getUser(), request.getFirstName(),
-                    request.getLastName(),
-                    request.getAddress()));
+                            request.getLastName(),
+                            request.getAddress(),
+                            request.getEmail()));
             return Response.status(201).entity(tokenDto).build();
         } catch (Exception e) {
             if (e.getClass().equals(UserConflictException.class)) {

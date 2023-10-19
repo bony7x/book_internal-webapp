@@ -66,4 +66,6 @@ public class Book {
     )*/
     @ToString.Exclude
     private List<Borrowing> borrowings;
+
+    private Integer borrowingCount;
 }

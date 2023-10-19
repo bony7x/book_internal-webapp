@@ -15,4 +15,6 @@ public class BookCategoryDto {
     private String name;
 
     private List<BookCategoryBookDto> books;
+
+    private Integer bookCount;
 }

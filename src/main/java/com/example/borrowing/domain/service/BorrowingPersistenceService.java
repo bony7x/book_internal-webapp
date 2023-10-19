@@ -55,9 +55,11 @@ public class BorrowingPersistenceService {
         if (book.getCount() == 0) {
             book.setStatus(BookStatus.NOT_AVAILABLE);
         }
+        book.setBorrowingCount(book.getBorrowingCount() + 1);
         borrowing.setBook(book);
         borrowing.setCustomer(customer);
         borrowing.setDateOfBorrowing(LocalDate.now());
+        customer.setBorrowingCount(customer.getBorrowingCount() + 1);
         repository.persist(borrowing);
         return borrowing;
     }
@@ -139,6 +141,8 @@ public class BorrowingPersistenceService {
         if (borrowing.getBook().getCount() == 1) {
             borrowing.getBook().setStatus(BookStatus.AVAILABLE);
         }
+        borrowing.getBook().setBorrowingCount(borrowing.getBook().getBorrowingCount() - 1);
+        borrowing.getCustomer().setBorrowingCount(borrowing.getCustomer().getBorrowingCount() - 1);
         repository.delete(borrowing);
     }
 
@@ -147,16 +151,16 @@ public class BorrowingPersistenceService {
 
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
-        if (request.getFilter() != null) {
+        if ( request.getFilter() != null && !request.getFilter().isEmpty()) {
             BorrowingFilter filter = objectMapper.convertValue(request.getFilter(), BorrowingFilter.class);
             List<Borrowing> borrowings;
-            if (filter.getName() != null) {
+            if (!filter.getName().isEmpty()) {
                 filter.setName("%" + filter.getName().toLowerCase() + "%");
             }
-            if (filter.getEmail() != null) {
+            if (!filter.getEmail().isEmpty()) {
                 filter.setEmail("%" + filter.getEmail().toLowerCase() + "%");
             }
-            if (filter.getName() != null && filter.getEmail() != null && filter.getDate() != null) {
+            if (!filter.getName().isEmpty() && !filter.getEmail().isEmpty() && filter.getDate() != null) {
                 borrowings = repository.list(
                         "Select e from Borrowing e where lower(e.customer.email) like ?1 and lower(e.book.name) like ?2 and e.dateOfBorrowing = ?3",
                         Sort.by(request.getSortable().getColumn()).direction(
@@ -165,7 +169,7 @@ public class BorrowingPersistenceService {
                 );
                 return new BorrowingsAndCountDto(borrowings.size(), borrowings);
             }
-            if (filter.getName() != null && filter.getEmail() != null) {
+            if (!filter.getName().isEmpty() && !filter.getEmail().isEmpty()) {
                 borrowings = repository.list(
                         "Select e from Borrowing e where lower(e.customer.email) like ?1 and lower(e.book.name) like ?2",
                         Sort.by(request.getSortable().getColumn()).direction(
@@ -174,7 +178,7 @@ public class BorrowingPersistenceService {
                 );
                 return new BorrowingsAndCountDto(borrowings.size(), borrowings);
             }
-            if (filter.getEmail() != null && filter.getDate() != null) {
+            if (!filter.getEmail().isEmpty() && filter.getDate() != null) {
                 borrowings = repository.list(
                         "Select e from Borrowing e where lower(e.customer.email) like ?1 and e.dateOfBorrowing = ?2",
                         Sort.by(request.getSortable().getColumn()).direction(
@@ -183,7 +187,7 @@ public class BorrowingPersistenceService {
                 );
                 return new BorrowingsAndCountDto(borrowings.size(), borrowings);
             }
-            if (filter.getName() != null && filter.getDate() != null) {
+            if (!filter.getName().isEmpty() && filter.getDate() != null) {
                 borrowings = repository.list(
                         "Select e from Borrowing e where lower(e.book.name) like ?1 and e.dateOfBorrowing = ?2",
                         Sort.by(request.getSortable().getColumn()).direction(
@@ -192,7 +196,7 @@ public class BorrowingPersistenceService {
                 );
                 return new BorrowingsAndCountDto(borrowings.size(), borrowings);
             }
-            if (filter.getName() != null) {
+            if (!filter.getName().isEmpty()) {
                 borrowings = repository.list("Select e from Borrowing e where lower(e.book.name) like ?1",
                         Sort.by(request.getSortable().getColumn()).direction(
                                 request.getSortable().isAscending() ? Direction.Ascending : Direction.Descending),
@@ -200,7 +204,7 @@ public class BorrowingPersistenceService {
                 );
                 return new BorrowingsAndCountDto(borrowings.size(), borrowings);
             }
-            if (filter.getEmail() != null) {
+            if (!filter.getEmail().isEmpty()) {
                 borrowings = repository.list("Select e from Borrowing e where lower(e.customer.email) like ?1",
                         Sort.by(request.getSortable().getColumn()).direction(
                                 request.getSortable().isAscending() ? Direction.Ascending : Direction.Descending),

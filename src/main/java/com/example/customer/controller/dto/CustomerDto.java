@@ -22,4 +22,6 @@ public class CustomerDto {
     private String address;
 
     private List<BookBorrowingDto> borrowings;
+
+    private Integer borrowingCount;
 }

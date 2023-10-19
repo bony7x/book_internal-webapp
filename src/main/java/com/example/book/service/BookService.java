@@ -10,6 +10,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 
 @ApplicationScoped
@@ -21,7 +22,7 @@ public class BookService {
 
     @Inject
     BookCategoryPersistenceService bookCategoryPersistenceService;
-    
+
 
     @Transactional
     public Book updateCategories(Integer bookId, Integer[] categoryIds)
@@ -29,10 +30,22 @@ public class BookService {
         log.debug("updateCategories: {} {}", bookId, categoryIds);
 
         Book book = service.getById(bookId);
+        List<BookCategory> all = bookCategoryPersistenceService.getAll();
+        List<BookCategory> old = book.getCategories();
+        List<BookCategory> newCategories;
         book.setCategories(new ArrayList<>());
         for (Integer integer : categoryIds) {
             BookCategory bookCategory = bookCategoryPersistenceService.getBookCategory(integer);
             book.getCategories().add(bookCategory);
+        }
+        newCategories = book.getCategories();
+        for (BookCategory category : all) {
+            if (old.contains(category) && !newCategories.contains(category)) {
+                category.setBookCount(category.getBookCount() - 1);
+            }
+            if (!old.contains(category) && newCategories.contains(category)) {
+                category.setBookCount(category.getBookCount() + 1);
+            }
         }
         return book;
     }

@@ -1,9 +1,5 @@
 package com.example.customer.controller;
 
-import com.example.book.controller.dto.BookDto;
-import com.example.book.controller.dto.BookResponseDto;
-import com.example.book.controller.dto.BooksAndCountDto;
-import com.example.book.domain.entity.BookFilter;
 import com.example.borrowing.exception.BorrowingConflictException;
 import com.example.customer.controller.dto.CreateCustomerDto;
 import com.example.customer.controller.dto.CustomerAndCountDto;
@@ -11,8 +7,8 @@ import com.example.customer.controller.dto.CustomerDto;
 import com.example.customer.controller.dto.CustomerResponseDto;
 import com.example.customer.controller.mapper.CustomerMapper;
 import com.example.customer.domain.entity.Customer;
-import com.example.customer.domain.entity.CustomerFilter;
 import com.example.customer.domain.service.CustomerPersistenceService;
+import com.example.customer.exception.CustomerConflictException;
 import com.example.customer.exception.CustomerNotFoundException;
 import com.example.request.ExtendedRequest;
 import com.example.request.Pageable;
@@ -53,9 +49,16 @@ public class CustomerController {
     public Response createCustomer(@Valid CreateCustomerDto customerDto) {
         log.debug("createCustomer: {}", customerDto);
 
-        Customer customer = persistenceService.persist(mapper.map(customerDto));
-        CustomerDto dto = mapper.map(customer);
-        return Response.status(201).entity(dto).build();
+        try {
+            Customer customer = persistenceService.persist(mapper.map(customerDto));
+            CustomerDto dto = mapper.map(customer);
+            return Response.status(201).entity(dto).build();
+        } catch (Exception e) {
+            if (e.getClass().equals(CustomerConflictException.class)) {
+                return Response.status(409).entity(e.getMessage()).build();
+            }
+            return Response.status(400).entity(e.getMessage()).build();
+        }
     }
 
     @POST
@@ -81,9 +84,9 @@ public class CustomerController {
         CustomerAndCountDto customerAndCountDto = persistenceService.filterCustomers(request);
         List<CustomerDto> dtos = mapper.map(customerAndCountDto.getCustomers());
         ExtendedRequest er = new ExtendedRequest();
-        er.setSortable(new Sortable("id",true));
+        er.setSortable(new Sortable("id", true));
         er.setPageable(new Pageable(1, customerAndCountDto.getTotalCount()));
-        CustomerResponseDto responseDto = mapper.mapToResponse(dtos,er, customerAndCountDto.getTotalCount());
+        CustomerResponseDto responseDto = mapper.mapToResponse(dtos, er, customerAndCountDto.getTotalCount());
         return Response.status(200).entity(responseDto).build();
     }
 

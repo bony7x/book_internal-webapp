@@ -9,6 +9,7 @@ import com.example.customer.controller.dto.CustomerAndCountDto;
 import com.example.customer.domain.entity.Customer;
 import com.example.customer.domain.entity.CustomerFilter;
 import com.example.customer.domain.repository.CustomerRepository;
+import com.example.customer.exception.CustomerConflictException;
 import com.example.customer.exception.CustomerNotFoundException;
 import com.example.request.ExtendedRequest;
 import com.example.utils.CalculateIndex.CalculateIndex;
@@ -20,6 +21,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import java.util.List;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 
 @ApplicationScoped
@@ -36,9 +38,16 @@ public class CustomerPersistenceService {
     UserPersistenceService userPersistenceService;
 
     @Transactional
-    public Customer persist(Customer customer) {
+    public Customer persist(Customer customer) throws CustomerConflictException {
         log.debug("persist: {}", customer);
 
+        String email = "%" + customer.getEmail().toLowerCase() + "%";
+        Optional<Customer> exists = repository.list("Select e from Customer e where lower(e.email) like ?1", email)
+                .stream().findFirst();
+        if (exists.isPresent()) {
+            throw new CustomerConflictException("Customer with given email already exists!");
+        }
+        customer.setBorrowingCount(0);
         repository.persist(customer);
         return customer;
     }
@@ -136,19 +145,19 @@ public class CustomerPersistenceService {
         log.debug("filterCustomers: {}", request);
 
         ObjectMapper objectMapper = new ObjectMapper();
-        if (request.getFilter() != null) {
+        if (request.getFilter().isEmpty()) {
             CustomerFilter filter = objectMapper.convertValue(request.getFilter(), CustomerFilter.class);
             List<Customer> customers;
-            if (filter.getFirstName() != null) {
+            if (!filter.getFirstName().isEmpty()) {
                 filter.setFirstName("%" + filter.getFirstName().toLowerCase() + "%");
             }
-            if (filter.getLastName() != null) {
+            if (!filter.getLastName().isEmpty()) {
                 filter.setLastName("%" + filter.getLastName().toLowerCase() + "%");
             }
-            if (filter.getEmail() != null) {
+            if (!filter.getEmail().isEmpty()) {
                 filter.setEmail("%" + filter.getEmail() + "%");
             }
-            if (filter.getFirstName() != null && filter.getLastName() != null && filter.getEmail() != null) {
+            if (!filter.getFirstName().isEmpty() && !filter.getLastName().isEmpty() && !filter.getEmail().isEmpty()) {
                 customers = repository.list(
                         "Select e from Customer e where lower(e.firstName) like ?1 and lower(e.lastName) like ?2 and lower(e.email) like ?3",
                         Sort.by(request.getSortable().getColumn()).direction(
@@ -157,7 +166,7 @@ public class CustomerPersistenceService {
                 );
                 return new CustomerAndCountDto(customers.size(), customers);
             }
-            if (filter.getFirstName() != null && filter.getLastName() != null) {
+            if (!filter.getFirstName().isEmpty() && !filter.getLastName().isEmpty()) {
                 customers = repository.list(
                         "Select e from Customer e where lower(e.firstName) like ?1 and lower(e.lastName) like ?2",
                         Sort.by(request.getSortable().getColumn()).direction(
@@ -166,7 +175,7 @@ public class CustomerPersistenceService {
                 );
                 return new CustomerAndCountDto(customers.size(), customers);
             }
-            if (filter.getFirstName() != null && filter.getEmail() != null) {
+            if (!filter.getFirstName().isEmpty() && !filter.getEmail().isEmpty()) {
                 customers = repository.list(
                         "Select e from Customer e where lower(e.firstName) like ?1 and lower(e.email) like ?2",
                         Sort.by(request.getSortable().getColumn()).direction(
@@ -175,7 +184,7 @@ public class CustomerPersistenceService {
                 );
                 return new CustomerAndCountDto(customers.size(), customers);
             }
-            if (filter.getLastName() != null && filter.getEmail() != null) {
+            if (!filter.getLastName().isEmpty() && !filter.getEmail().isEmpty()) {
                 customers = repository.list(
                         "Select e from Customer e where lower(e.lastName) like ?1 and lower(e.email) like ?2",
                         Sort.by(request.getSortable().getColumn()).direction(
@@ -184,7 +193,7 @@ public class CustomerPersistenceService {
                 );
                 return new CustomerAndCountDto(customers.size(), customers);
             }
-            if (filter.getFirstName() != null) {
+            if (!filter.getFirstName().isEmpty()) {
                 customers = repository.list("Select e from Customer e where lower(e.firstName) like ?1",
                         Sort.by(request.getSortable().getColumn()).direction(
                                 request.getSortable().isAscending() ? Direction.Ascending : Direction.Descending),
@@ -192,7 +201,7 @@ public class CustomerPersistenceService {
                 );
                 return new CustomerAndCountDto(customers.size(), customers);
             }
-            if (filter.getLastName() != null) {
+            if (!filter.getLastName().isEmpty()) {
                 customers = repository.list("Select e from Customer e where lower(e.lastName) like ?1",
                         Sort.by(request.getSortable().getColumn()).direction(
                                 request.getSortable().isAscending() ? Direction.Ascending : Direction.Descending),
@@ -200,7 +209,7 @@ public class CustomerPersistenceService {
                 );
                 return new CustomerAndCountDto(customers.size(), customers);
             }
-            if (filter.getEmail() != null) {
+            if (!filter.getEmail().isEmpty()) {
                 customers = repository.list("Select e from Customer e where lower(e.email) like ?1",
                         Sort.by(request.getSortable().getColumn()).direction(
                                 request.getSortable().isAscending() ? Direction.Ascending : Direction.Descending),

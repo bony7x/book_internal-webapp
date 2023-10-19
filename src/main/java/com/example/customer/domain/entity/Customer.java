@@ -49,4 +49,6 @@ public class Customer {
     )*/
     @ToString.Exclude
     private List<Borrowing> borrowings;
+
+    private Integer borrowingCount;
 }

@@ -6,16 +6,13 @@ import com.example.book.controller.dto.BooksAndCountDto;
 import com.example.book.controller.dto.CreateBookDto;
 import com.example.book.controller.mapper.BookMapper;
 import com.example.book.domain.entity.Book;
-import com.example.book.domain.entity.BookFilter;
 import com.example.book.domain.service.BookPersistenceService;
+import com.example.book.exception.BookConflictException;
 import com.example.book.exception.BookNotFoundException;
 import com.example.book.service.BookService;
-import com.example.borrowing.exception.BorrowingConflictException;
 import com.example.bookCategory.exception.BookCategoryNotFoundException;
+import com.example.borrowing.exception.BorrowingConflictException;
 import com.example.request.ExtendedRequest;
-import com.example.request.Pageable;
-import com.example.request.Sortable;
-import jakarta.annotation.security.PermitAll;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -54,10 +51,16 @@ public class BookController {
     @Produces(MediaType.APPLICATION_JSON)
     public Response createBook(@Valid CreateBookDto createBookDto) {
         log.debug("createBook: {}", createBookDto);
-
-        Book book = persistenceService.persist(mapper.map(createBookDto));
-        BookDto dto = mapper.map(book);
-        return Response.status(201).entity(dto).build();
+        try {
+            Book book = persistenceService.persist(mapper.map(createBookDto));
+            BookDto dto = mapper.map(book);
+            return Response.status(201).entity(dto).build();
+        } catch (Exception e) {
+            if (e.getClass().equals(BookConflictException.class)) {
+                return Response.status(409).entity(e.getMessage()).build();
+            }
+            return Response.status(400).entity(e.getMessage()).build();
+        }
     }
 
     @POST
