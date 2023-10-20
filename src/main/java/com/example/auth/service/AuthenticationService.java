@@ -6,6 +6,8 @@ import com.example.auth.domain.service.AuthenticationPersistenceService;
 import com.example.auth.domain.service.UserPersistenceService;
 import com.example.auth.exception.UserConflictException;
 import com.example.auth.exception.UserNotFoundException;
+import com.example.customer.domain.entity.Customer;
+import com.example.customer.domain.repository.CustomerRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -23,6 +25,9 @@ public class AuthenticationService {
     AuthenticationPersistenceService authenticationPersistenceService;
 
     @Inject
+    CustomerRepository customerRepository;
+
+    @Inject
     UserPersistenceService userPersistenceService;
 
     Decoder decoder = Base64.getDecoder();
@@ -36,8 +41,10 @@ public class AuthenticationService {
             throw new UserConflictException("Username, email and password can't be empty!");
         }
         User log = decode(login);
+        String email = "%" + login.getEmail().toLowerCase() + "%";
         Optional<User> logged = authenticationPersistenceService.getLogin(log);
-        if (logged.isPresent()) {
+        Optional<Customer> existing = customerRepository.list("Select e from Customer e where lower(e.email) like ?1", email).stream().findFirst();
+        if (logged.isPresent() || existing.isPresent()) {
             throw new UserConflictException("User with chosen username or email already exists!");
         } else {
             log.setRole(Roles.USER);

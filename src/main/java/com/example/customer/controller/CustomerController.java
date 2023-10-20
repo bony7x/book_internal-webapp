@@ -10,9 +10,10 @@ import com.example.customer.domain.entity.Customer;
 import com.example.customer.domain.service.CustomerPersistenceService;
 import com.example.customer.exception.CustomerConflictException;
 import com.example.customer.exception.CustomerNotFoundException;
-import com.example.request.ExtendedRequest;
-import com.example.request.Pageable;
-import com.example.request.Sortable;
+import com.example.customer.service.CustomerService;
+import com.example.utils.requests.ExtendedRequest;
+import com.example.utils.paging.Pageable;
+import com.example.utils.sorting.Sortable;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -38,6 +39,9 @@ public class CustomerController {
 
     @Inject
     CustomerPersistenceService persistenceService;
+
+    @Inject
+    CustomerService customerService;
 
     @Inject
     CustomerMapper mapper;
@@ -68,7 +72,7 @@ public class CustomerController {
     public Response getAllCustomers(ExtendedRequest request) {
         log.debug("getAllCustomers: {}", request);
 
-        CustomerAndCountDto customers = persistenceService.getAll(request);
+        CustomerAndCountDto customers = customerService.getAll(request);
         List<CustomerDto> dto = mapper.map(customers.getCustomers());
         CustomerResponseDto response = mapper.mapToResponse(dto, request, customers.getTotalCount());
         return Response.status(200).entity(response).build();
@@ -81,7 +85,7 @@ public class CustomerController {
     public Response filterCustomers(ExtendedRequest request) {
         log.debug("filterCustomers: {}", request);
 
-        CustomerAndCountDto customerAndCountDto = persistenceService.filterCustomers(request);
+        CustomerAndCountDto customerAndCountDto = customerService.filterCustomers(request);
         List<CustomerDto> dtos = mapper.map(customerAndCountDto.getCustomers());
         ExtendedRequest er = new ExtendedRequest();
         er.setSortable(new Sortable("id", true));

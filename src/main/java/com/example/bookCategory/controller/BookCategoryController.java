@@ -8,7 +8,8 @@ import com.example.bookCategory.controller.mapper.BookCategoryMapper;
 import com.example.bookCategory.domain.entity.BookCategory;
 import com.example.bookCategory.domain.service.BookCategoryPersistenceService;
 import com.example.bookCategory.exception.BookCategoryNotFoundException;
-import com.example.request.ExtendedRequest;
+import com.example.bookCategory.service.BookCategoryService;
+import com.example.utils.requests.ExtendedRequest;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -36,6 +37,9 @@ public class BookCategoryController {
     BookCategoryPersistenceService persistenceService;
 
     @Inject
+    BookCategoryService bookCategoryService;
+
+    @Inject
     BookCategoryMapper mapper;
 
     @POST
@@ -61,7 +65,7 @@ public class BookCategoryController {
     public Response getAllBookCategories(ExtendedRequest request) {
         log.debug("getAllBookCategories: {}", request);
 
-        BookCategoriesAndCountDto bookCategories = persistenceService.getAll(request);
+        BookCategoriesAndCountDto bookCategories = bookCategoryService.getAll(request);
         List<BookCategoryDto> dtos = mapper.map(bookCategories.getBookCategories());
         BookCategoryResponseDto response = mapper.mapToResponse(dtos, request, bookCategories.getTotalCount());
         return Response.status(200).entity(response).build();
@@ -78,7 +82,7 @@ public class BookCategoryController {
             List<BookCategoryDto> dtos = mapper.map(books);
             return Response.status(200).entity(dtos).build();
         }
-        List<BookCategory> books = persistenceService.getAll();
+        List<BookCategory> books = bookCategoryService.getAll();
         List<BookCategoryDto> dtos = mapper.map(books);
         return Response.status(200).entity(dtos).build();
     }

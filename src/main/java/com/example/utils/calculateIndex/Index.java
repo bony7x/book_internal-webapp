@@ -1,4 +1,4 @@
-package com.example.utils.CalculateIndex;
+package com.example.utils.calculateIndex;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

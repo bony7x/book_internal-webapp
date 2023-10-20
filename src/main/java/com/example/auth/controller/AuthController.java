@@ -35,16 +35,13 @@ public class AuthController {
     AuthenticationPersistenceService authenticationPersistenceService;
 
     @Inject
-    UserPersistenceService userPersistenceService;
-
-    @Inject
     LoginMapper mapper;
 
     @POST
     @Path("/register")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response registerClient(UserDto dto) {
+    public Response registerUser(UserDto dto) {
         log.debug("registerClient: {}", dto);
 
         try {
@@ -63,7 +60,7 @@ public class AuthController {
     @Path("/login")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response loginClient(@Context HttpHeaders headers) {
+    public Response loginUser(@Context HttpHeaders headers) {
         log.debug("loginClient");
 
         String authString = headers.getRequestHeaders().getFirst("Authorization");
@@ -92,8 +89,7 @@ public class AuthController {
             TokenDto tokenDto = new TokenDto(
                     authenticationPersistenceService.registerUserAsCustomer(request.getUser(), request.getFirstName(),
                             request.getLastName(),
-                            request.getAddress(),
-                            request.getEmail()));
+                            request.getAddress()));
             return Response.status(201).entity(tokenDto).build();
         } catch (Exception e) {
             if (e.getClass().equals(UserConflictException.class)) {
@@ -112,43 +108,4 @@ public class AuthController {
 
         return Response.status(200).build();
     }
-
-/*    @GET
-    @Path("/users")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getAllUsers() {
-        log.debug("getAllUsers");
-
-        List<UserDto> dtos = mapper.map(this.authenticationPersistenceService.getAllUsers());
-        return Response.status(200).entity(dtos).build();
-    }*/
-
-/*    @POST
-    @Path("/users/current")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getCurrentUser(String token) {
-        log.debug("getAllUsers");
-
-        UserDto dto = mapper.map(persistenceService.getCurrentUser(token));
-        return Response.status(200).entity(dto).build();
-    }*/
-
-/*    @PUT
-    @Path("/users")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response updateUserRole(UserUpdateRoleDto update) {
-        log.debug("updateUserRole: {}", update);
-
-        try {
-            update.setRole(update.getRole().toUpperCase());
-            userPersistenceService.updateUserRole(mapper.map(update));
-            return Response.status(200).build();
-        } catch (Exception e) {
-            if (e.getClass().equals(UserNotFoundException.class)) {
-                return Response.status(404).entity(e.getMessage()).build();
-            }
-            return Response.status(400).entity(e.getMessage()).build();
-        }
-    }*/
 }

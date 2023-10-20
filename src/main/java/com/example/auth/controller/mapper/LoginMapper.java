@@ -6,7 +6,7 @@ import com.example.auth.controller.dto.UserUpdateDto;
 import com.example.auth.controller.dto.UserUpdateRoleDto;
 import com.example.auth.domain.entity.User;
 import com.example.borrowing.domain.entity.Borrowing;
-import com.example.request.ExtendedRequest;
+import com.example.utils.requests.ExtendedRequest;
 import java.util.List;
 import org.mapstruct.Mapper;
 
@@ -20,10 +20,6 @@ public abstract class LoginMapper {
     }
 
     public abstract Borrowing mapToBrw(Integer value);
-
-    public abstract List<Integer> mapToList(List<Borrowing> value);
-
-    public abstract List<Borrowing> mapToBrwList(List<Integer> value);
 
     public abstract UserDto map (User login);
 

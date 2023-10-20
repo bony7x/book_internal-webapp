@@ -1,5 +1,7 @@
-package com.example.request;
+package com.example.utils.requests;
 
+import com.example.utils.paging.Pageable;
+import com.example.utils.sorting.Sortable;
 import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Data;

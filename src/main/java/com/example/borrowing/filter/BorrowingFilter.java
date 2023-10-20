@@ -1,4 +1,4 @@
-package com.example.borrowing.domain.entity;
+package com.example.borrowing.filter;
 
 import java.time.LocalDate;
 import lombok.AllArgsConstructor;

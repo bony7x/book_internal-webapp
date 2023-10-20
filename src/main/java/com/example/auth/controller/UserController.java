@@ -7,6 +7,7 @@ import com.example.auth.controller.dto.UserResponseDto;
 import com.example.auth.controller.dto.UserUpdateAddressDto;
 import com.example.auth.controller.dto.UserUpdateDto;
 import com.example.auth.controller.dto.UserUpdateEmailDto;
+import com.example.auth.controller.dto.UserUpdatePasswordDto;
 import com.example.auth.controller.dto.UserUpdateRoleDto;
 import com.example.auth.controller.dto.UserUpdateUsernameDto;
 import com.example.auth.controller.mapper.LoginMapper;
@@ -14,9 +15,10 @@ import com.example.auth.domain.entity.User;
 import com.example.auth.domain.service.UserPersistenceService;
 import com.example.auth.exception.UserConflictException;
 import com.example.auth.exception.UserNotFoundException;
+import com.example.auth.service.UserService;
 import com.example.customer.exception.CustomerConflictException;
 import com.example.customer.exception.CustomerNotFoundException;
-import com.example.request.ExtendedRequest;
+import com.example.utils.requests.ExtendedRequest;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
@@ -42,6 +44,9 @@ public class UserController {
     UserPersistenceService userPersistenceService;
 
     @Inject
+    UserService userService;
+
+    @Inject
     LoginMapper mapper;
 
 
@@ -62,7 +67,7 @@ public class UserController {
     public Response getAllUsers(ExtendedRequest request) {
         log.debug("getAllUsers");
 
-        UserAndCountDto userAndCountDto = userPersistenceService.getAllUsers(request);
+        UserAndCountDto userAndCountDto = userService.getAllUsers(request);
         List<UserDto> dtos = mapper.map(userAndCountDto.getUsers());
         UserResponseDto responseDto = mapper.mapToResponse(dtos, request, userAndCountDto.getTotalCount());
         return Response.status(200).entity(responseDto).build();
@@ -97,25 +102,6 @@ public class UserController {
         return Response.status(200).entity(dtos).build();
     }
 
-/*    @PUT
-    @Path("/users/update")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response updateUser(UserUpdateDto update) {
-        log.debug("updateUser: {}", update);
-
-        try {
-            UserDto dto = mapper.map(userPersistenceService.updateUser(mapper.map(update)));
-            dto.setPassword(update.getPassword());
-            return Response.status(200).entity(dto).build();
-        } catch (Exception e) {
-            if (e.getClass().equals(UserNotFoundException.class)) {
-                return Response.status(404).entity(e.getMessage()).build();
-            }
-            return Response.status(400).entity(e.getMessage()).build();
-        }
-    }*/
-
     @PUT
     @Path("/users/{id}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -124,7 +110,7 @@ public class UserController {
         log.debug("updateUser: {} {}", id, update);
 
         try {
-            UserDto user = mapper.map(userPersistenceService.updateUserNameEmail(mapper.map(update), id));
+            UserDto user = mapper.map(userService.updateUserNameEmail(mapper.map(update), id));
             return Response.status(200).entity(user).build();
         } catch (Exception e) {
             if (e.getClass().equals(UserConflictException.class)) {
@@ -181,7 +167,7 @@ public class UserController {
         log.debug("updateUserName: {}", update);
 
         try {
-            String token = userPersistenceService.updateUserName(update.getName(), update.getToken(),
+            String token = userService.updateUserName(update.getName(), update.getToken(),
                     update.getPassword());
             TokenDto dto = new TokenDto(token);
             return Response.status(200).entity(dto).build();
@@ -204,7 +190,7 @@ public class UserController {
         log.debug("updateUserEmail: {}", update);
 
         try {
-            userPersistenceService.updateUserEmail(update.getEmail(), update.getToken(),
+            userService.updateUserEmail(update.getEmail(), update.getToken(),
                     update.getPassword());
             return Response.status(200).build();
         } catch (Exception e) {
@@ -226,9 +212,32 @@ public class UserController {
         log.debug("updateUserName: {}", update);
 
         try {
-            userPersistenceService.updateUserAddress(update.getAddress(), update.getToken(),
+            userService.updateUserAddress(update.getAddress(), update.getToken(),
                     update.getPassword());
             return Response.status(200).build();
+        } catch (Exception e) {
+            if (e.getClass().equals(UserNotFoundException.class)) {
+                return Response.status(404).entity(e.getMessage()).build();
+            }
+            if (e.getClass().equals(UserConflictException.class)) {
+                return Response.status(409).entity(e.getMessage()).build();
+            }
+            return Response.status(400).entity(e.getMessage()).build();
+        }
+    }
+
+    @PUT
+    @Path("/users/password")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response updateUserPassword(UserUpdatePasswordDto update) {
+        log.debug("updateUserPassword: {}", update);
+
+        try {
+            String token = userService.updateUserPassword(update.getCurrentPassword(), update.getNewPassword(),
+                    update.getToken());
+            TokenDto dto = new TokenDto(token);
+            return Response.status(200).entity(dto).build();
         } catch (Exception e) {
             if (e.getClass().equals(UserNotFoundException.class)) {
                 return Response.status(404).entity(e.getMessage()).build();

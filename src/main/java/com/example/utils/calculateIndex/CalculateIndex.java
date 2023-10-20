@@ -1,6 +1,6 @@
-package com.example.utils.CalculateIndex;
+package com.example.utils.calculateIndex;
 
-import com.example.request.ExtendedRequest;
+import com.example.utils.requests.ExtendedRequest;
 import lombok.Data;
 
 @Data

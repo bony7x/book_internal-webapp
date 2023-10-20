@@ -1,15 +1,15 @@
-package com.example.bookCategory.controller.dto;
+package com.example.book.filter;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-public class BookCategoryOnlyDto {
-
-    private Integer id;
+@AllArgsConstructor
+public class BookFilter {
 
     private String name;
+    private String author;
+    private String category;
 }

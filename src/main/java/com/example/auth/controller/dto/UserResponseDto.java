@@ -1,6 +1,6 @@
 package com.example.auth.controller.dto;
 
-import com.example.request.ExtendedResponse;
+import com.example.utils.responses.ExtendedResponse;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;

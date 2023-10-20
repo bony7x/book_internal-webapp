@@ -42,11 +42,6 @@ public class Customer {
     private String address;
 
     @OneToMany(fetch = FetchType.EAGER,mappedBy = "customer")
-/*    @JoinTable(
-            name = "brw__book_borrowing",
-            joinColumns = {@JoinColumn(name = "customer_id")},
-            inverseJoinColumns = {@JoinColumn(name = "borrowing_id")}
-    )*/
     @ToString.Exclude
     private List<Borrowing> borrowings;
 

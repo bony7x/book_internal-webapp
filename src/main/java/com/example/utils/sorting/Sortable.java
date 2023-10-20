@@ -1,4 +1,4 @@
-package com.example.request;
+package com.example.utils.sorting;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Pageable {
-    Integer pageNumber;
-    Integer pageSize;
+public class Sortable {
+    String column;
+    boolean ascending;
 }

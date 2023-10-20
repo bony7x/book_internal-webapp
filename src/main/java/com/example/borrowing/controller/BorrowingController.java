@@ -1,9 +1,5 @@
 package com.example.borrowing.controller;
 
-import com.example.book.controller.dto.BookDto;
-import com.example.book.controller.dto.BookResponseDto;
-import com.example.book.controller.dto.BooksAndCountDto;
-import com.example.book.domain.entity.BookFilter;
 import com.example.book.exception.BookNotFoundException;
 import com.example.borrowing.controller.dto.BorrowingDto;
 import com.example.borrowing.controller.dto.BorrowingResponseDto;
@@ -11,15 +7,13 @@ import com.example.borrowing.controller.dto.BorrowingsAndCountDto;
 import com.example.borrowing.controller.dto.CreateBorrowingDto;
 import com.example.borrowing.controller.mapper.BorrowingMapper;
 import com.example.borrowing.domain.entity.Borrowing;
-import com.example.borrowing.domain.entity.BorrowingFilter;
 import com.example.borrowing.domain.service.BorrowingPersistenceService;
 import com.example.borrowing.exception.BorrowingConflictException;
 import com.example.borrowing.exception.BorrowingNotFoundException;
+import com.example.borrowing.service.BorrowingService;
 import com.example.customer.controller.dto.CustomerDto;
 import com.example.customer.exception.CustomerNotFoundException;
-import com.example.request.ExtendedRequest;
-import com.example.request.Pageable;
-import com.example.request.Sortable;
+import com.example.utils.requests.ExtendedRequest;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -44,6 +38,9 @@ public class BorrowingController {
 
     @Inject
     BorrowingPersistenceService persistenceService;
+
+    @Inject
+    BorrowingService borrowingService;
 
     @Inject
     BorrowingMapper mapper;
@@ -91,7 +88,7 @@ public class BorrowingController {
         log.debug("getAllBorrowings: {}", request);
 
 
-        BorrowingsAndCountDto borrowings = persistenceService.getBorrowings(request);
+        BorrowingsAndCountDto borrowings = borrowingService.getBorrowings(request);
         List<BorrowingDto> dto = mapper.mapToBDto(borrowings.getBorrowings());
         BorrowingResponseDto response = mapper.mapToResponse(dto, request, borrowings.getTotalCount());
         return Response.status(200).entity(response).build();

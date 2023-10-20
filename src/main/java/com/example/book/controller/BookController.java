@@ -12,7 +12,7 @@ import com.example.book.exception.BookNotFoundException;
 import com.example.book.service.BookService;
 import com.example.bookCategory.exception.BookCategoryNotFoundException;
 import com.example.borrowing.exception.BorrowingConflictException;
-import com.example.request.ExtendedRequest;
+import com.example.utils.requests.ExtendedRequest;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -70,7 +70,7 @@ public class BookController {
     public Response getAllBooks(ExtendedRequest request) {
         log.debug("getAllBooks: {}", request);
 
-        BooksAndCountDto booksAndCountDto = persistenceService.getAllBooks(request);
+        BooksAndCountDto booksAndCountDto = service.getAllBooks(request);
         List<BookDto> dtos = mapper.map(booksAndCountDto.getBooks());
         BookResponseDto response = mapper.mapToResponse(dtos, request, booksAndCountDto.getTotalCount());
         return Response.status(200).entity(response).build();

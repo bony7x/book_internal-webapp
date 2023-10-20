@@ -1,15 +1,13 @@
-package com.example.book.domain.entity;
+package com.example.bookCategory.filter;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class BookFilter {
+@NoArgsConstructor
+public class BookCategoryFilter {
 
-    private String name;
-    private String author;
     private String category;
 }

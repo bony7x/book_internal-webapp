@@ -1,21 +1,15 @@
-package com.example.customer.controller.dto;
+package com.example.customer.filter;
 
-import io.quarkus.arc.All;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
+@AllArgsConstructor
 @NoArgsConstructor
-@All
-public class CustomerOnlyDto {
-
-    private Integer id;
+public class CustomerFilter {
 
     private String firstName;
-
     private String lastName;
-
     private String email;
-
-    private String address;
 }
