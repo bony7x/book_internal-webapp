@@ -75,10 +75,10 @@ public class CustomerPersistenceService {
         log.debug("getCustomerById: {}", id);
 
         Customer customer = repository.findById(Long.valueOf(id));
-        if (customer != null) {
-            return customer;
+        if (customer == null) {
+            throw new CustomerNotFoundException(String.format("Customer with ID = %s not found", id));
         }
-        throw new CustomerNotFoundException(String.format("Zakaznik s ID = %s nebol najdeny", id));
+        return customer;
     }
 
     @Transactional
@@ -98,7 +98,7 @@ public class CustomerPersistenceService {
 
         Customer customer = getCustomerById(id);
         if (!customer.getBorrowings().isEmpty()) {
-            throw new BorrowingConflictException("Zakaznik, ktory ma vypozicane knihy nemoze byt odstraneny!");
+            throw new BorrowingConflictException("Customer with active borrowings can't be deleted");
         }
         User user = userPersistenceService.getUserByCustomerId(customer.getId());
         if (user != null) {

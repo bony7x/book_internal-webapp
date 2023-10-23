@@ -84,11 +84,10 @@ public class UserPersistenceService {
         log.debug("getUser: {}", id);
 
         Optional<User> exists = repository.findByIdOptional(Long.valueOf(id));
-        if (exists.isPresent()) {
-            return exists.get();
-        } else {
+        if (exists.isEmpty()) {
             throw new UserNotFoundException("User not found!");
         }
+        return exists.get();
     }
 
     @Transactional
@@ -97,14 +96,15 @@ public class UserPersistenceService {
         log.debug("deleteUser: {}", id);
 
         User user = getUser(id);
-        if (user.getCustomer() != null) {
-            Customer customer = customerPersistenceService.getCustomerById(user.getCustomer().getId());
-            if (customer.getBorrowings().isEmpty()) {
-                customerRepository.delete(customer);
-            } else {
-                throw new CustomerConflictException("Customer with active borrowings can't be deleted!");
-            }
+        if (user.getCustomer() == null) {
+            repository.delete(user);
+            return;
         }
-        repository.delete(user);
+        Customer customer = customerPersistenceService.getCustomerById(user.getCustomer().getId());
+        if (!customer.getBorrowings().isEmpty()) {
+            throw new CustomerConflictException("Customer with active borrowings can't be deleted!");
+        }
+        customerRepository.delete(customer);
     }
 }
+

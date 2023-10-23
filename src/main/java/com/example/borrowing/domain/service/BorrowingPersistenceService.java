@@ -56,7 +56,6 @@ public class BorrowingPersistenceService {
     }
 
 
-
     public List<Borrowing> getBorrowingsByBookId(Integer id) {
         log.debug("getBorrowingsByBookId: {}", id);
 
@@ -74,20 +73,20 @@ public class BorrowingPersistenceService {
         log.debug("getBorrowingByid: {}", id);
 
         Borrowing borrowing = repository.findById(Long.valueOf(id));
-        if (borrowing != null) {
-            return borrowing;
+        if (borrowing == null) {
+            throw new BorrowingNotFoundException(String.format("Borrowing with ID = %s not found!", id));
         }
-        throw new BorrowingNotFoundException(String.format("Vypozicanie s ID = %s nebolo najdene", id));
+        return borrowing;
     }
 
     public List<Borrowing> getBorrowingsById(Integer id) throws BorrowingNotFoundException {
         log.debug("getBorrowingById: {}", id);
 
         List<Borrowing> borrowing = repository.list("Select e from Borrowing e where e.id = ?1", id);
-        if (borrowing != null) {
-            return borrowing;
+        if (borrowing == null) {
+            throw new BorrowingNotFoundException(String.format("Borrowing with ID = %s not found", id));
         }
-        throw new BorrowingNotFoundException(String.format("Vypozicanie s ID = %s nebolo najdene", id));
+        return borrowing;
     }
 
     @Transactional

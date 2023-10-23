@@ -54,15 +54,16 @@ public class BookCategoryPersistenceService {
     public BookCategory getBookCategory(Integer id) throws BookCategoryNotFoundException {
         log.debug("getBookCategory: {}", id);
 
-        if (id != null) {
-            BookCategory bookCategory = repository.findById(Long.valueOf(id));
-            if (bookCategory != null) {
-                return bookCategory;
-            }
-            throw new BookCategoryNotFoundException(String.format("Kategoria s id = %s nenajdena", id));
+        if (id == null) {
+            throw new BookCategoryNotFoundException("ID can't be null!");
         }
-        throw new BookCategoryNotFoundException("ID nemoze byt null");
+        BookCategory bookCategory = repository.findById(Long.valueOf(id));
+        if (bookCategory == null) {
+            throw new BookCategoryNotFoundException(String.format("Book category with id = %s not found", id));
+        }
+        return bookCategory;
     }
+
 
     @Transactional
     public BookCategory updateBookCategory(Integer id, BookCategory update) throws BookCategoryNotFoundException {

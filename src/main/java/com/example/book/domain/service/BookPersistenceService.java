@@ -33,9 +33,10 @@ public class BookPersistenceService {
 
         String name = "%" + book.getName().toLowerCase() + "%";
         String author = "%" + book.getAuthor().toLowerCase() + "%";
-        Optional<Book> existing = repository.list("Select e from Book e where lower(e.name) like ?1 and lower(e.author) like ?2",
+        Optional<Book> existing = repository.list(
+                "Select e from Book e where lower(e.name) like ?1 and lower(e.author) like ?2",
                 name, author).stream().findFirst();
-        if(existing.isPresent()) {
+        if (existing.isPresent()) {
             throw new BookConflictException("Book with the given name and author is already listed!");
         }
         book.setIsbn(rng());
@@ -72,15 +73,16 @@ public class BookPersistenceService {
     public Book getById(Integer id) throws BookNotFoundException {
         log.debug("getById: {}", id);
 
-        if (id != null) {
-            Book book = repository.findById(id.longValue());
-            if (book != null) {
-                return book;
-            }
-            throw new BookNotFoundException(String.format("Kniha s ID = %s nenajdena", id));
+        if (id == null) {
+            throw new BookNotFoundException("Book ID can't be null");
         }
-        throw new BookNotFoundException("ID knihy nemoze byt null");
+        Book book = repository.findById(id.longValue());
+        if (book == null) {
+            throw new BookNotFoundException(String.format("Book with ID = %s not found!", id));
+        }
+        return book;
     }
+
 
     @Transactional
     public Book updateBook(Integer id, Book update) throws BookNotFoundException {
@@ -100,7 +102,7 @@ public class BookPersistenceService {
 
         Book book = getById(id);
         if (!book.getBorrowings().isEmpty()) {
-            throw new BorrowingConflictException("Vypozicana kniha nemoze byt odstranena!");
+            throw new BorrowingConflictException("Borrowed book can't be deleted!");
         }
         for (BookCategory bookCategory : book.getCategories()) {
             bookCategory.setBookCount(bookCategory.getBookCount() - 1);

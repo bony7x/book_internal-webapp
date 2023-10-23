@@ -37,36 +37,36 @@ public class AuthenticationService {
     public User register(User login) throws UserConflictException {
         log.debug("register: {}", login);
 
-        if(login.getName().isEmpty() || login.getPassword().isEmpty() || login.getEmail().isEmpty()){
+        if (login.getName().isEmpty() || login.getPassword().isEmpty() || login.getEmail().isEmpty()) {
             throw new UserConflictException("Username, email and password can't be empty!");
         }
         User log = decode(login);
         String email = "%" + login.getEmail().toLowerCase() + "%";
         Optional<User> logged = authenticationPersistenceService.getLogin(log);
-        Optional<Customer> existing = customerRepository.list("Select e from Customer e where lower(e.email) like ?1", email).stream().findFirst();
+        Optional<Customer> existing = customerRepository.list("Select e from Customer e where lower(e.email) like ?1",
+                email).stream().findFirst();
         if (logged.isPresent() || existing.isPresent()) {
             throw new UserConflictException("User with chosen username or email already exists!");
-        } else {
-            log.setRole(Roles.USER);
-            return userPersistenceService.persist(log);
         }
+        log.setRole(Roles.USER);
+        return userPersistenceService.persist(log);
     }
 
     @Transactional
     public String login(String authString) throws UserNotFoundException, UserConflictException {
         log.debug("login: {}", authString);
 
-        authString = authString.replace("Basic ","");
+        authString = authString.replace("Basic ", "");
         String decoded = new String(decoder.decode(authString));
         String[] split = decoded.split(":");
-        Optional<User> exists = authenticationPersistenceService.getLogin(new User(split[0],split[1]));
+        Optional<User> exists = authenticationPersistenceService.getLogin(new User(split[0], split[1]));
         if (exists.isEmpty()) {
             throw new UserNotFoundException("User with the name \"" + split[0] + "\" doesn't exist");
-        } else {
-            if (!(exists.get().getPassword().equals(split[1]))) {
-                throw new UserConflictException("Wrong password!");
-            }
         }
+        if (!(exists.get().getPassword().equals(split[1]))) {
+            throw new UserConflictException("Wrong password!");
+        }
+
         String encodedRole;
         encodedRole = "[" + encoder.encodeToString(exists.get().getRole().toString().getBytes()) + "]";
         authString = authString + encodedRole;

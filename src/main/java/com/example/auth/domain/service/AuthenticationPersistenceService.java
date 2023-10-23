@@ -11,7 +11,6 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import java.util.Base64;
-import java.util.Base64.Decoder;
 import java.util.Base64.Encoder;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
@@ -41,26 +40,26 @@ public class AuthenticationPersistenceService {
         log.debug("registerUserAsCustomer: {} {} {} {}", userFromDto, firstName, lastName, address);
 
         User user = repository.findById(Long.valueOf(userFromDto.getId()));
-        if (user.getCustomer() == null) {
-            Customer customer = new Customer();
-            customer.setEmail(user.getEmail());
-            customer.setFirstName(firstName);
-            customer.setLastName(lastName);
-            customer.setAddress(address);
-            Customer persisted = customerPersistenceService.persist(customer);
-            user.setCustomer(persisted);
-            user.setRole(Roles.CUSTOMER);
-            user = repository.getEntityManager().merge(user);
-            return sendAuthString(user);
-        } else {
+        if (user.getCustomer() != null) {
             throw new UserConflictException("User is already a registered customer!");
         }
+        Customer customer = new Customer();
+        customer.setEmail(user.getEmail());
+        customer.setFirstName(firstName);
+        customer.setLastName(lastName);
+        customer.setAddress(address);
+        Customer persisted = customerPersistenceService.persist(customer);
+        user.setCustomer(persisted);
+        user.setRole(Roles.CUSTOMER);
+        user = repository.getEntityManager().merge(user);
+        return sendAuthString(user);
+
     }
 
     public String sendAuthString(User user) {
         log.debug("sendAuthString: {}", user);
 
-        String authString = user.getName()+ ":" + user.getPassword();
+        String authString = user.getName() + ":" + user.getPassword();
         authString = encoder.encodeToString(authString.getBytes());
         authString = authString + "[" + encoder.encodeToString(user.getRole().toString().getBytes()) + "]";
         return authString;
